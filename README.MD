@@ -1,1 +1,1 @@
-# Template Module
+# Core Module

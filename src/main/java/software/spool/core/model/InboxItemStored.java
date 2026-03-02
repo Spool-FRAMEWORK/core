@@ -3,13 +3,12 @@ package software.spool.core.model;
 import java.time.Instant;
 import java.util.UUID;
 
-public record RawDataWrittenToInbox(
+public record InboxItemStored(
         String eventId,
         Instant timestamp,
         String eventType,
         String sender,
-        String idempotencyKey,
-        String payload
+        String idempotencyKey
 ) implements SpoolEvent {
 
     public static Builder from(String source) {
@@ -18,16 +17,10 @@ public record RawDataWrittenToInbox(
 
     public static class Builder {
         private final String sender;
-        private String payload;
         private String idempotencyKey;
 
         public Builder(String sender) {
             this.sender = sender;
-        }
-
-        public Builder withPayload(String payload) {
-            this.payload = payload;
-            return this;
         }
 
         public Builder withIdempotencyKey(String idempotencyKey) {
@@ -35,14 +28,13 @@ public record RawDataWrittenToInbox(
             return this;
         }
 
-        public RawDataWrittenToInbox create() {
-            return new RawDataWrittenToInbox(
+        public InboxItemStored create() {
+            return new InboxItemStored(
                     UUID.randomUUID().toString(),
                     Instant.now(),
                     "DataWrittenToInbox",
                     sender,
-                    idempotencyKey,
-                    payload
+                    idempotencyKey
             );
         }
     }

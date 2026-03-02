@@ -3,7 +3,7 @@ package software.spool.core.model;
 import java.time.Instant;
 import java.util.UUID;
 
-public record InboxFailed(
+public record InboxConsumptionFailed(
         String eventId,
         String eventType,
         Instant timestamp,
@@ -21,8 +21,8 @@ public record InboxFailed(
             this.sender = sender;
         }
 
-        public InboxFailed with(String errorMessage) {
-            return new InboxFailed(
+        public InboxConsumptionFailed with(String errorMessage) {
+            return new InboxConsumptionFailed(
                     UUID.randomUUID().toString(),
                     "INBOX_FAILED",
                     Instant.now(),

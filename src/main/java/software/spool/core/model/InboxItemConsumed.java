@@ -3,7 +3,7 @@ package software.spool.core.model;
 import java.time.Instant;
 import java.util.UUID;
 
-public record RawDataReadFromInbox(
+public record InboxItemConsumed(
         String eventId,
         String eventType,
         Instant timestamp,
@@ -11,7 +11,7 @@ public record RawDataReadFromInbox(
         String payload
 ) implements SpoolEvent {
 
-    public RawDataReadFromInbox {
+    public InboxItemConsumed {
         if (sender == null || sender.isBlank()) {
             throw new IllegalArgumentException("sender is required");
         }
@@ -45,7 +45,7 @@ public record RawDataReadFromInbox(
             return this;
         }
 
-        public RawDataReadFromInbox build() {
+        public InboxItemConsumed build() {
             if (sourceId == null || sourceId.isBlank()) {
                 throw new IllegalArgumentException("sender is required");
             }
@@ -54,7 +54,7 @@ public record RawDataReadFromInbox(
             String eventType = "RAW_INBOX_ITEM";
             Instant timestamp = Instant.now();
 
-            return new RawDataReadFromInbox(
+            return new InboxItemConsumed(
                     eventId,
                     eventType,
                     timestamp,

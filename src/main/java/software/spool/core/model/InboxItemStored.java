@@ -6,34 +6,52 @@ import java.util.UUID;
 public record InboxItemStored(
         String eventId,
         Instant timestamp,
-        String eventType,
-        String sender,
+        String correlationId,
+        String causationId,
+        String crawlerId,
+        String sourceId,
         String idempotencyKey
 ) implements SpoolEvent {
-
-    public static Builder from(String source) {
-        return new Builder(source);
-    }
-
     public static class Builder {
-        private final String sender;
+        private String correlationId;
+        private String causationId;
+        private String crawlerId;
+        private String sourceId;
         private String idempotencyKey;
 
-        public Builder(String sender) {
-            this.sender = sender;
+        public Builder correlationId(String correlationId) {
+            this.correlationId = correlationId;
+            return this;
         }
 
-        public Builder withIdempotencyKey(String idempotencyKey) {
+        public Builder causationId(String causationId) {
+            this.causationId = causationId;
+            return this;
+        }
+
+        public Builder crawlerId(String crawlerId) {
+            this.crawlerId = crawlerId;
+            return this;
+        }
+
+        public Builder sourceId(String sourceId) {
+            this.sourceId = sourceId;
+            return this;
+        }
+
+        public Builder idempotencyKey(String idempotencyKey) {
             this.idempotencyKey = idempotencyKey;
             return this;
         }
 
-        public InboxItemStored create() {
+        public InboxItemStored build() {
             return new InboxItemStored(
                     UUID.randomUUID().toString(),
                     Instant.now(),
-                    "DataWrittenToInbox",
-                    sender,
+                    correlationId,
+                    causationId,
+                    crawlerId,
+                    sourceId,
                     idempotencyKey
             );
         }

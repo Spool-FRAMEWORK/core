@@ -9,15 +9,13 @@ public record SourceItemCaptured(
         String correlationId,
         String causationId,
         String crawlerId,
-        String sourceId,
-        String idempotencyKey
+        String sourceId
 ) implements SpoolEvent {
     public static class Builder {
         private String correlationId;
         private String causationId;
         private String crawlerId;
         private String sourceId;
-        private String idempotencyKey;
 
         public Builder correlationId(String correlationId) {
             this.correlationId = correlationId;
@@ -39,11 +37,6 @@ public record SourceItemCaptured(
             return this;
         }
 
-        public Builder idempotencyKey(String idempotencyKey) {
-            this.idempotencyKey = idempotencyKey;
-            return this;
-        }
-
         public SourceItemCaptured build() {
             return new SourceItemCaptured(
                     UUID.randomUUID().toString(),
@@ -51,8 +44,7 @@ public record SourceItemCaptured(
                     correlationId,
                     causationId,
                     crawlerId,
-                    sourceId,
-                    idempotencyKey
+                    sourceId
             );
         }
     }

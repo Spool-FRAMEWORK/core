@@ -5,28 +5,53 @@ import java.util.UUID;
 
 public record InboxConsumptionFailed(
         String eventId,
-        String eventType,
         Instant timestamp,
-        String sender,
+        String correlationId,
+        String causationId,
+        String publisherId,
+        String idempotencyKey,
         String errorMessage
 ) implements SpoolEvent {
-    public static Builder from(String sender) {
-        return new Builder(sender);
-    }
-
     public static class Builder {
-        private final String sender;
+        private String correlationId;
+        private String causationId;
+        private String publisherId;
+        private String idempotencyKey;
+        private String errorMessage;
 
-        protected Builder(String sender) {
-            this.sender = sender;
+        public Builder correlationId(String correlationId) {
+            this.correlationId = correlationId;
+            return this;
         }
 
-        public InboxConsumptionFailed with(String errorMessage) {
+        public Builder causationId(String causationId) {
+            this.causationId = causationId;
+            return this;
+        }
+
+        public Builder publisherId(String publisherId) {
+            this.publisherId = publisherId;
+            return this;
+        }
+
+        public Builder idempotencyKey(String idempotencyKey) {
+            this.idempotencyKey = idempotencyKey;
+            return this;
+        }
+
+        public Builder errorMessage(String errorMessage) {
+            this.errorMessage = errorMessage;
+            return this;
+        }
+
+        public InboxConsumptionFailed build() {
             return new InboxConsumptionFailed(
                     UUID.randomUUID().toString(),
-                    "INBOX_FAILED",
                     Instant.now(),
-                    sender,
+                    correlationId,
+                    causationId,
+                    publisherId,
+                    idempotencyKey,
                     errorMessage
             );
         }

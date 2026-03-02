@@ -5,61 +5,46 @@ import java.util.UUID;
 
 public record InboxItemConsumed(
         String eventId,
-        String eventType,
         Instant timestamp,
-        String sender,
-        String payload
+        String correlationId,
+        String causationId,
+        String publisherId,
+        String idempotencyKey
 ) implements SpoolEvent {
-
-    public InboxItemConsumed {
-        if (sender == null || sender.isBlank()) {
-            throw new IllegalArgumentException("sender is required");
-        }
-        if (eventType == null || eventType.isBlank()) {
-            throw new IllegalArgumentException("eventType is required");
-        }
-        if (eventId == null || eventId.isBlank()) {
-            throw new IllegalArgumentException("eventId is required");
-        }
-        if (timestamp == null) {
-            throw new IllegalArgumentException("timestamp is required");
-        }
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
     public static class Builder {
+        private String correlationId;
+        private String causationId;
+        private String publisherId;
+        private String idempotencyKey;
 
-        private String sourceId;
-        private String payload ;
-
-        public Builder sourceId(String sourceId) {
-            this.sourceId = sourceId;
+        public Builder correlationId(String correlationId) {
+            this.correlationId = correlationId;
             return this;
         }
 
-        public Builder payload(String payload) {
-            this.payload = payload;
+        public Builder causationId(String causationId) {
+            this.causationId = causationId;
+            return this;
+        }
+
+        public Builder publisherId(String publisherId) {
+            this.publisherId = publisherId;
+            return this;
+        }
+
+        public Builder idempotencyKey(String idempotencyKey) {
+            this.idempotencyKey = idempotencyKey;
             return this;
         }
 
         public InboxItemConsumed build() {
-            if (sourceId == null || sourceId.isBlank()) {
-                throw new IllegalArgumentException("sender is required");
-            }
-
-            String eventId = UUID.randomUUID().toString();
-            String eventType = "RAW_INBOX_ITEM";
-            Instant timestamp = Instant.now();
-
             return new InboxItemConsumed(
-                    eventId,
-                    eventType,
-                    timestamp,
-                    sourceId,
-                    payload
+                    UUID.randomUUID().toString(),
+                    Instant.now(),
+                    correlationId,
+                    causationId,
+                    publisherId,
+                    idempotencyKey
             );
         }
     }

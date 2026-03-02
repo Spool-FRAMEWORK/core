@@ -4,19 +4,21 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public record InboxConsumptionFailed(
+public record InboxItemStoreFailed(
         String eventId,
         Instant timestamp,
         String correlationId,
         String causationId,
-        String publisherId,
+        String crawlerId,
+        String sourceId,
         String idempotencyKey,
         String errorMessage) implements SpoolEvent {
 
-    public InboxConsumptionFailed {
+    public InboxItemStoreFailed {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
-        Objects.requireNonNull(publisherId, "publisherId is required");
+        Objects.requireNonNull(crawlerId, "crawlerId is required");
+        Objects.requireNonNull(sourceId, "sourceId is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
         Objects.requireNonNull(errorMessage, "errorMessage is required");
     }
@@ -28,7 +30,8 @@ public record InboxConsumptionFailed(
     public static class Builder {
         private String correlationId;
         private String causationId;
-        private String publisherId;
+        private String crawlerId;
+        private String sourceId;
         private String idempotencyKey;
         private String errorMessage;
 
@@ -38,10 +41,11 @@ public record InboxConsumptionFailed(
             return this;
         }
 
-        public Builder from(final InboxItemStored cause) {
+        public Builder from(final SourceItemCaptured cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
-            this.idempotencyKey = cause.idempotencyKey();
+            this.crawlerId = cause.crawlerId();
+            this.sourceId = cause.sourceId();
             return this;
         }
 
@@ -55,8 +59,13 @@ public record InboxConsumptionFailed(
             return this;
         }
 
-        public Builder publisherId(final String publisherId) {
-            this.publisherId = publisherId;
+        public Builder crawlerId(final String crawlerId) {
+            this.crawlerId = crawlerId;
+            return this;
+        }
+
+        public Builder sourceId(final String sourceId) {
+            this.sourceId = sourceId;
             return this;
         }
 
@@ -70,13 +79,14 @@ public record InboxConsumptionFailed(
             return this;
         }
 
-        public InboxConsumptionFailed build() {
-            return new InboxConsumptionFailed(
+        public InboxItemStoreFailed build() {
+            return new InboxItemStoreFailed(
                     UUID.randomUUID().toString(),
                     Instant.now(),
                     correlationId,
                     causationId,
-                    publisherId,
+                    crawlerId,
+                    sourceId,
                     idempotencyKey,
                     errorMessage);
         }

@@ -38,10 +38,9 @@ public record ItemPublished(
             return this;
         }
 
-        public Builder from(final InboxItemConsumed cause) {
+        public Builder from(final InboxItemStored cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
-            this.publisherId = cause.publisherId();
             this.idempotencyKey = cause.idempotencyKey();
             return this;
         }

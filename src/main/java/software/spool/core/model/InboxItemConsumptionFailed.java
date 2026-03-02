@@ -4,21 +4,21 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public record ItemPublished(
+public record InboxItemConsumptionFailed(
         String eventId,
         Instant timestamp,
         String correlationId,
         String causationId,
         String publisherId,
         String idempotencyKey,
-        String destination) implements SpoolEvent {
+        String errorMessage) implements SpoolEvent {
 
-    public ItemPublished {
+    public InboxItemConsumptionFailed {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
         Objects.requireNonNull(publisherId, "publisherId is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
-        Objects.requireNonNull(destination, "destination is required");
+        Objects.requireNonNull(errorMessage, "errorMessage is required");
     }
 
     public static Builder builder() {
@@ -30,7 +30,7 @@ public record ItemPublished(
         private String causationId;
         private String publisherId;
         private String idempotencyKey;
-        private String destination;
+        private String errorMessage;
 
         public Builder from(final SpoolEvent cause) {
             this.correlationId = cause.correlationId();
@@ -38,10 +38,9 @@ public record ItemPublished(
             return this;
         }
 
-        public Builder from(final InboxItemConsumed cause) {
+        public Builder from(final InboxItemStored cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
-            this.publisherId = cause.publisherId();
             this.idempotencyKey = cause.idempotencyKey();
             return this;
         }
@@ -66,20 +65,20 @@ public record ItemPublished(
             return this;
         }
 
-        public Builder destination(final String destination) {
-            this.destination = destination;
+        public Builder errorMessage(final String errorMessage) {
+            this.errorMessage = errorMessage;
             return this;
         }
 
-        public ItemPublished build() {
-            return new ItemPublished(
+        public InboxItemConsumptionFailed build() {
+            return new InboxItemConsumptionFailed(
                     UUID.randomUUID().toString(),
                     Instant.now(),
                     correlationId,
                     causationId,
                     publisherId,
                     idempotencyKey,
-                    destination);
+                    errorMessage);
         }
     }
 }

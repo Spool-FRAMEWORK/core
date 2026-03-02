@@ -4,19 +4,21 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public record SourceItemCaptured(
+public record SourceItemCaptureFailed(
         String eventId,
         Instant timestamp,
         String correlationId,
         String causationId,
         String crawlerId,
-        String sourceId) implements SpoolEvent {
+        String sourceId,
+        String errorMessage) implements SpoolEvent {
 
-    public SourceItemCaptured {
+    public SourceItemCaptureFailed {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
         Objects.requireNonNull(crawlerId, "crawlerId is required");
         Objects.requireNonNull(sourceId, "sourceId is required");
+        Objects.requireNonNull(errorMessage, "errorMessage is required");
     }
 
     public static Builder builder() {
@@ -28,6 +30,7 @@ public record SourceItemCaptured(
         private String causationId;
         private String crawlerId;
         private String sourceId;
+        private String errorMessage;
 
         public Builder from(final SpoolEvent cause) {
             this.correlationId = cause.correlationId();
@@ -55,14 +58,20 @@ public record SourceItemCaptured(
             return this;
         }
 
-        public SourceItemCaptured build() {
-            return new SourceItemCaptured(
+        public Builder errorMessage(final String errorMessage) {
+            this.errorMessage = errorMessage;
+            return this;
+        }
+
+        public SourceItemCaptureFailed build() {
+            return new SourceItemCaptureFailed(
                     UUID.randomUUID().toString(),
                     Instant.now(),
                     correlationId,
                     causationId,
                     crawlerId,
-                    sourceId);
+                    sourceId,
+                    errorMessage);
         }
     }
 }

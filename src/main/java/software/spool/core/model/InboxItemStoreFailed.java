@@ -9,7 +9,7 @@ public record InboxItemStoreFailed(
         Instant timestamp,
         String correlationId,
         String causationId,
-        String crawlerId,
+        String senderId,
         String sourceId,
         String idempotencyKey,
         String errorMessage) implements SpoolEvent {
@@ -17,7 +17,7 @@ public record InboxItemStoreFailed(
     public InboxItemStoreFailed {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
-        Objects.requireNonNull(crawlerId, "crawlerId is required");
+        Objects.requireNonNull(senderId, "senderId is required");
         Objects.requireNonNull(sourceId, "sourceId is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
         Objects.requireNonNull(errorMessage, "errorMessage is required");
@@ -30,7 +30,7 @@ public record InboxItemStoreFailed(
     public static class Builder {
         private String correlationId;
         private String causationId;
-        private String crawlerId;
+        private String senderId;
         private String sourceId;
         private String idempotencyKey;
         private String errorMessage;
@@ -44,8 +44,9 @@ public record InboxItemStoreFailed(
         public Builder from(final SourceItemCaptured cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
-            this.crawlerId = cause.crawlerId();
+            this.senderId = cause.senderId();
             this.sourceId = cause.sourceId();
+            this.idempotencyKey = cause.idempotencyKey();
             return this;
         }
 
@@ -59,8 +60,8 @@ public record InboxItemStoreFailed(
             return this;
         }
 
-        public Builder crawlerId(final String crawlerId) {
-            this.crawlerId = crawlerId;
+        public Builder senderId(final String senderId) {
+            this.senderId = senderId;
             return this;
         }
 
@@ -85,7 +86,7 @@ public record InboxItemStoreFailed(
                     Instant.now(),
                     correlationId,
                     causationId,
-                    crawlerId,
+                    senderId,
                     sourceId,
                     idempotencyKey,
                     errorMessage);

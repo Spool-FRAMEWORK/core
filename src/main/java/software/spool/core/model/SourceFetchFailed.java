@@ -4,19 +4,19 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public record SourceCaptureFailed(
+public record SourceFetchFailed(
         String eventId,
         Instant timestamp,
         String correlationId,
         String causationId,
-        String crawlerId,
+        String senderId,
         String sourceId,
         String errorMessage) implements SpoolEvent {
 
-    public SourceCaptureFailed {
+    public SourceFetchFailed {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
-        Objects.requireNonNull(crawlerId, "crawlerId is required");
+        Objects.requireNonNull(senderId, "senderId is required");
         Objects.requireNonNull(sourceId, "sourceId is required");
         Objects.requireNonNull(errorMessage, "errorMessage is required");
     }
@@ -28,7 +28,7 @@ public record SourceCaptureFailed(
     public static class Builder {
         private String correlationId;
         private String causationId;
-        private String crawlerId;
+        private String senderId;
         private String sourceId;
         private String errorMessage;
 
@@ -48,8 +48,8 @@ public record SourceCaptureFailed(
             return this;
         }
 
-        public Builder crawlerId(final String crawlerId) {
-            this.crawlerId = crawlerId;
+        public Builder senderId(final String senderId) {
+            this.senderId = senderId;
             return this;
         }
 
@@ -63,13 +63,13 @@ public record SourceCaptureFailed(
             return this;
         }
 
-        public SourceCaptureFailed build() {
-            return new SourceCaptureFailed(
+        public SourceFetchFailed build() {
+            return new SourceFetchFailed(
                     UUID.randomUUID().toString(),
                     Instant.now(),
                     correlationId,
                     causationId,
-                    crawlerId,
+                    senderId,
                     sourceId,
                     errorMessage);
         }

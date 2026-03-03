@@ -9,14 +9,14 @@ public record InboxItemStored(
         Instant timestamp,
         String correlationId,
         String causationId,
-        String crawlerId,
+        String senderId,
         String sourceId,
         String idempotencyKey) implements SpoolEvent {
 
     public InboxItemStored {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
-        Objects.requireNonNull(crawlerId, "crawlerId is required");
+        Objects.requireNonNull(senderId, "senderId is required");
         Objects.requireNonNull(sourceId, "sourceId is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
     }
@@ -28,7 +28,7 @@ public record InboxItemStored(
     public static class Builder {
         private String correlationId;
         private String causationId;
-        private String crawlerId;
+        private String senderId;
         private String sourceId;
         private String idempotencyKey;
 
@@ -41,8 +41,9 @@ public record InboxItemStored(
         public Builder from(final SourceItemCaptured cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
-            this.crawlerId = cause.crawlerId();
+            this.senderId = cause.senderId();
             this.sourceId = cause.sourceId();
+            this.idempotencyKey = cause.idempotencyKey();
             return this;
         }
 
@@ -57,7 +58,7 @@ public record InboxItemStored(
         }
 
         public Builder crawlerId(final String crawlerId) {
-            this.crawlerId = crawlerId;
+            this.senderId = crawlerId;
             return this;
         }
 
@@ -77,7 +78,7 @@ public record InboxItemStored(
                     Instant.now(),
                     correlationId,
                     causationId,
-                    crawlerId,
+                    senderId,
                     sourceId,
                     idempotencyKey);
         }

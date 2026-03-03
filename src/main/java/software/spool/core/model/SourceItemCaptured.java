@@ -9,14 +9,16 @@ public record SourceItemCaptured(
         Instant timestamp,
         String correlationId,
         String causationId,
-        String crawlerId,
-        String sourceId) implements SpoolEvent {
+        String senderId,
+        String sourceId,
+        String idempotencyKey) implements SpoolEvent {
 
     public SourceItemCaptured {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
-        Objects.requireNonNull(crawlerId, "crawlerId is required");
+        Objects.requireNonNull(senderId, "senderId is required");
         Objects.requireNonNull(sourceId, "sourceId is required");
+        Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
     }
 
     public static Builder builder() {
@@ -26,8 +28,9 @@ public record SourceItemCaptured(
     public static class Builder {
         private String correlationId;
         private String causationId;
-        private String crawlerId;
+        private String senderId;
         private String sourceId;
+        private String idempotencyKey;
 
         public Builder from(final SpoolEvent cause) {
             this.correlationId = cause.correlationId();
@@ -45,13 +48,18 @@ public record SourceItemCaptured(
             return this;
         }
 
-        public Builder crawlerId(final String crawlerId) {
-            this.crawlerId = crawlerId;
+        public Builder senderId(final String senderId) {
+            this.senderId = senderId;
             return this;
         }
 
         public Builder sourceId(final String sourceId) {
             this.sourceId = sourceId;
+            return this;
+        }
+
+        public Builder idempotencyKey(final String idempotencyKey) {
+            this.idempotencyKey = idempotencyKey;
             return this;
         }
 
@@ -61,8 +69,9 @@ public record SourceItemCaptured(
                     Instant.now(),
                     correlationId,
                     causationId,
-                    crawlerId,
-                    sourceId);
+                    senderId,
+                    sourceId,
+                    idempotencyKey);
         }
     }
 }

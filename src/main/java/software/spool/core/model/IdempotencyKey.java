@@ -43,7 +43,7 @@ public record IdempotencyKey(String value) {
      * @return an idempotency key of 64-character hex string
      * @throws IllegalStateException if the SHA-256 algorithm is not available
      */
-    private IdempotencyKey of(String sourceId, String payload) throws IllegalStateException {
+    public IdempotencyKey of(String sourceId, String payload) throws IllegalStateException {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             String input = sourceId + ":" + payload;

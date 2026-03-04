@@ -10,7 +10,7 @@ public record InboxItemConsumed(
         String correlationId,
         String causationId,
         String publisherId,
-        String idempotencyKey) implements SpoolEvent {
+        IdempotencyKey idempotencyKey) implements SpoolEvent {
 
     public InboxItemConsumed {
         Objects.requireNonNull(eventId, "eventId is required");
@@ -27,7 +27,7 @@ public record InboxItemConsumed(
         private String correlationId;
         private String causationId;
         private String publisherId;
-        private String idempotencyKey;
+        private IdempotencyKey idempotencyKey;
 
         public Builder from(final SpoolEvent cause) {
             this.correlationId = cause.correlationId();
@@ -58,7 +58,7 @@ public record InboxItemConsumed(
             return this;
         }
 
-        public Builder idempotencyKey(final String idempotencyKey) {
+        public Builder idempotencyKey(final IdempotencyKey idempotencyKey) {
             this.idempotencyKey = idempotencyKey;
             return this;
         }

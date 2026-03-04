@@ -10,7 +10,7 @@ public record InboxItemConsumptionFailed(
         String correlationId,
         String causationId,
         String publisherId,
-        String idempotencyKey,
+        IdempotencyKey idempotencyKey,
         String errorMessage) implements SpoolEvent {
 
     public InboxItemConsumptionFailed {
@@ -29,7 +29,7 @@ public record InboxItemConsumptionFailed(
         private String correlationId;
         private String causationId;
         private String publisherId;
-        private String idempotencyKey;
+        private IdempotencyKey idempotencyKey;
         private String errorMessage;
 
         public Builder from(final SpoolEvent cause) {
@@ -61,7 +61,7 @@ public record InboxItemConsumptionFailed(
             return this;
         }
 
-        public Builder idempotencyKey(final String idempotencyKey) {
+        public Builder idempotencyKey(final IdempotencyKey idempotencyKey) {
             this.idempotencyKey = idempotencyKey;
             return this;
         }

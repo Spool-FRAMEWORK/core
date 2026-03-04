@@ -10,7 +10,7 @@ public record ItemPublishFailed(
         String correlationId,
         String causationId,
         String publisherId,
-        String idempotencyKey,
+        IdempotencyKey idempotencyKey,
         String destination,
         String errorMessage) implements SpoolEvent {
 
@@ -31,7 +31,7 @@ public record ItemPublishFailed(
         private String correlationId;
         private String causationId;
         private String publisherId;
-        private String idempotencyKey;
+        private IdempotencyKey idempotencyKey;
         private String destination;
         private String errorMessage;
 
@@ -63,7 +63,7 @@ public record ItemPublishFailed(
             return this;
         }
 
-        public Builder idempotencyKey(final String idempotencyKey) {
+        public Builder idempotencyKey(final IdempotencyKey idempotencyKey) {
             this.idempotencyKey = idempotencyKey;
             return this;
         }

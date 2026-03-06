@@ -27,3 +27,4 @@ jobs:
         run: mvn deploy -B --no-transfer-progress -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}

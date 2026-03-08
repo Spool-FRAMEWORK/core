@@ -11,7 +11,8 @@ public record ItemPublished(
         String causationId,
         String publisherId,
         IdempotencyKey idempotencyKey,
-        String destination) implements SpoolEvent {
+        String destination,
+        String payload) implements SpoolEvent {
 
     public ItemPublished {
         Objects.requireNonNull(eventId, "eventId is required");
@@ -19,6 +20,7 @@ public record ItemPublished(
         Objects.requireNonNull(publisherId, "publisherId is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
         Objects.requireNonNull(destination, "destination is required");
+        Objects.requireNonNull(payload, "payload is required");
     }
 
     public static Builder builder() {
@@ -31,6 +33,7 @@ public record ItemPublished(
         private String publisherId;
         private IdempotencyKey idempotencyKey;
         private String destination;
+        private String payload;
 
         public Builder from(final SpoolEvent cause) {
             this.correlationId = cause.correlationId();
@@ -70,6 +73,11 @@ public record ItemPublished(
             return this;
         }
 
+        public Builder payload(final String payload) {
+            this.payload = payload;
+            return this;
+        }
+
         public ItemPublished build() {
             return new ItemPublished(
                     UUID.randomUUID().toString(),
@@ -78,7 +86,8 @@ public record ItemPublished(
                     causationId,
                     publisherId,
                     idempotencyKey,
-                    destination);
+                    destination,
+                    payload);
         }
     }
 }

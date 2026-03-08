@@ -1,20 +1,19 @@
 package software.spool.core.exception;
 
 public class SerializationException extends SpoolException {
-
-    private final String paylaod;
+    private final String payload;
 
     public SerializationException(String payload, Throwable cause) {
         super("Serialization failed for: " + payload, cause);
-        this.paylaod = payload;
+        this.payload = payload;
     }
 
     public SerializationException(String message, String payload) {
         super("Serialization failed for: " + payload + ". " + message);
-        this.paylaod = payload;
+        this.payload = payload;
     }
 
-    public String getPaylaod() {
-        return paylaod;
+    public String getPayload() {
+        return payload;
     }
 }

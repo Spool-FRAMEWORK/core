@@ -9,17 +9,13 @@ public record ItemPublishFailed(
         Instant timestamp,
         String correlationId,
         String causationId,
-        String publisherId,
         IdempotencyKey idempotencyKey,
-        String destination,
         String errorMessage) implements SpoolEvent {
 
     public ItemPublishFailed {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
-        Objects.requireNonNull(publisherId, "publisherId is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
-        Objects.requireNonNull(destination, "destination is required");
         Objects.requireNonNull(errorMessage, "errorMessage is required");
     }
 
@@ -30,9 +26,7 @@ public record ItemPublishFailed(
     public static class Builder {
         private String correlationId;
         private String causationId;
-        private String publisherId;
         private IdempotencyKey idempotencyKey;
-        private String destination;
         private String errorMessage;
 
         public Builder from(final SpoolEvent cause) {
@@ -58,18 +52,8 @@ public record ItemPublishFailed(
             return this;
         }
 
-        public Builder publisherId(final String publisherId) {
-            this.publisherId = publisherId;
-            return this;
-        }
-
         public Builder idempotencyKey(final IdempotencyKey idempotencyKey) {
             this.idempotencyKey = idempotencyKey;
-            return this;
-        }
-
-        public Builder destination(final String destination) {
-            this.destination = destination;
             return this;
         }
 
@@ -84,9 +68,7 @@ public record ItemPublishFailed(
                     Instant.now(),
                     correlationId,
                     causationId,
-                    publisherId,
                     idempotencyKey,
-                    destination,
                     errorMessage);
         }
     }

@@ -9,16 +9,12 @@ public record InboxItemStoreFailed(
         Instant timestamp,
         String correlationId,
         String causationId,
-        String senderId,
-        String sourceId,
         IdempotencyKey idempotencyKey,
         String errorMessage) implements SpoolEvent {
 
     public InboxItemStoreFailed {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
-        Objects.requireNonNull(senderId, "senderId is required");
-        Objects.requireNonNull(sourceId, "sourceId is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
         Objects.requireNonNull(errorMessage, "errorMessage is required");
     }
@@ -30,8 +26,6 @@ public record InboxItemStoreFailed(
     public static class Builder {
         private String correlationId;
         private String causationId;
-        private String senderId;
-        private String sourceId;
         private IdempotencyKey idempotencyKey;
         private String errorMessage;
 
@@ -44,8 +38,6 @@ public record InboxItemStoreFailed(
         public Builder from(final SourceItemCaptured cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
-            this.senderId = cause.senderId();
-            this.sourceId = cause.sourceId();
             this.idempotencyKey = cause.idempotencyKey();
             return this;
         }
@@ -57,16 +49,6 @@ public record InboxItemStoreFailed(
 
         public Builder causationId(final String causationId) {
             this.causationId = causationId;
-            return this;
-        }
-
-        public Builder senderId(final String senderId) {
-            this.senderId = senderId;
-            return this;
-        }
-
-        public Builder sourceId(final String sourceId) {
-            this.sourceId = sourceId;
             return this;
         }
 
@@ -86,8 +68,6 @@ public record InboxItemStoreFailed(
                     Instant.now(),
                     correlationId,
                     causationId,
-                    senderId,
-                    sourceId,
                     idempotencyKey,
                     errorMessage);
         }

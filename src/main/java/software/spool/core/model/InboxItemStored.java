@@ -9,15 +9,11 @@ public record InboxItemStored(
         Instant timestamp,
         String correlationId,
         String causationId,
-        String senderId,
-        String sourceId,
         IdempotencyKey idempotencyKey) implements SpoolEvent {
 
     public InboxItemStored {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
-        Objects.requireNonNull(senderId, "senderId is required");
-        Objects.requireNonNull(sourceId, "sourceId is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
     }
 
@@ -28,8 +24,6 @@ public record InboxItemStored(
     public static class Builder {
         private String correlationId;
         private String causationId;
-        private String senderId;
-        private String sourceId;
         private IdempotencyKey idempotencyKey;
 
         public Builder from(final SpoolEvent cause) {
@@ -41,8 +35,6 @@ public record InboxItemStored(
         public Builder from(final SourceItemCaptured cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
-            this.senderId = cause.senderId();
-            this.sourceId = cause.sourceId();
             this.idempotencyKey = cause.idempotencyKey();
             return this;
         }
@@ -57,16 +49,6 @@ public record InboxItemStored(
             return this;
         }
 
-        public Builder crawlerId(final String crawlerId) {
-            this.senderId = crawlerId;
-            return this;
-        }
-
-        public Builder sourceId(final String sourceId) {
-            this.sourceId = sourceId;
-            return this;
-        }
-
         public Builder idempotencyKey(final IdempotencyKey idempotencyKey) {
             this.idempotencyKey = idempotencyKey;
             return this;
@@ -78,8 +60,6 @@ public record InboxItemStored(
                     Instant.now(),
                     correlationId,
                     causationId,
-                    senderId,
-                    sourceId,
                     idempotencyKey);
         }
     }

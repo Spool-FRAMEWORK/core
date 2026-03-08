@@ -9,14 +9,12 @@ public record InboxItemConsumptionFailed(
         Instant timestamp,
         String correlationId,
         String causationId,
-        String publisherId,
         IdempotencyKey idempotencyKey,
         String errorMessage) implements SpoolEvent {
 
     public InboxItemConsumptionFailed {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
-        Objects.requireNonNull(publisherId, "publisherId is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
         Objects.requireNonNull(errorMessage, "errorMessage is required");
     }
@@ -28,7 +26,6 @@ public record InboxItemConsumptionFailed(
     public static class Builder {
         private String correlationId;
         private String causationId;
-        private String publisherId;
         private IdempotencyKey idempotencyKey;
         private String errorMessage;
 
@@ -41,7 +38,6 @@ public record InboxItemConsumptionFailed(
         public Builder from(final ItemPublished cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
-            this.publisherId = cause.publisherId();
             this.idempotencyKey = cause.idempotencyKey();
             return this;
         }
@@ -53,11 +49,6 @@ public record InboxItemConsumptionFailed(
 
         public Builder causationId(final String causationId) {
             this.causationId = causationId;
-            return this;
-        }
-
-        public Builder publisherId(final String publisherId) {
-            this.publisherId = publisherId;
             return this;
         }
 
@@ -77,7 +68,6 @@ public record InboxItemConsumptionFailed(
                     Instant.now(),
                     correlationId,
                     causationId,
-                    publisherId,
                     idempotencyKey,
                     errorMessage);
         }

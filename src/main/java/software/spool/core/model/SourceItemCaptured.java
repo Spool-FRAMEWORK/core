@@ -9,15 +9,11 @@ public record SourceItemCaptured(
         Instant timestamp,
         String correlationId,
         String causationId,
-        String senderId,
-        String sourceId,
         IdempotencyKey idempotencyKey) implements SpoolEvent {
 
     public SourceItemCaptured {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
-        Objects.requireNonNull(senderId, "senderId is required");
-        Objects.requireNonNull(sourceId, "sourceId is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
     }
 
@@ -28,8 +24,6 @@ public record SourceItemCaptured(
     public static class Builder {
         private String correlationId;
         private String causationId;
-        private String senderId;
-        private String sourceId;
         private IdempotencyKey idempotencyKey;
 
         public Builder from(final SpoolEvent cause) {
@@ -48,16 +42,6 @@ public record SourceItemCaptured(
             return this;
         }
 
-        public Builder senderId(final String senderId) {
-            this.senderId = senderId;
-            return this;
-        }
-
-        public Builder sourceId(final String sourceId) {
-            this.sourceId = sourceId;
-            return this;
-        }
-
         public Builder idempotencyKey(final IdempotencyKey idempotencyKey) {
             this.idempotencyKey = idempotencyKey;
             return this;
@@ -69,8 +53,6 @@ public record SourceItemCaptured(
                     Instant.now(),
                     correlationId,
                     causationId,
-                    senderId,
-                    sourceId,
                     idempotencyKey);
         }
     }

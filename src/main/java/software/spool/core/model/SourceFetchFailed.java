@@ -9,15 +9,11 @@ public record SourceFetchFailed(
         Instant timestamp,
         String correlationId,
         String causationId,
-        String senderId,
-        String sourceId,
         String errorMessage) implements SpoolEvent {
 
     public SourceFetchFailed {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
-        Objects.requireNonNull(senderId, "senderId is required");
-        Objects.requireNonNull(sourceId, "sourceId is required");
         Objects.requireNonNull(errorMessage, "errorMessage is required");
     }
 
@@ -28,8 +24,6 @@ public record SourceFetchFailed(
     public static class Builder {
         private String correlationId;
         private String causationId;
-        private String senderId;
-        private String sourceId;
         private String errorMessage;
 
         public Builder from(final SpoolEvent cause) {
@@ -48,16 +42,6 @@ public record SourceFetchFailed(
             return this;
         }
 
-        public Builder senderId(final String senderId) {
-            this.senderId = senderId;
-            return this;
-        }
-
-        public Builder sourceId(final String sourceId) {
-            this.sourceId = sourceId;
-            return this;
-        }
-
         public Builder errorMessage(final String errorMessage) {
             this.errorMessage = errorMessage;
             return this;
@@ -69,8 +53,6 @@ public record SourceFetchFailed(
                     Instant.now(),
                     correlationId,
                     causationId,
-                    senderId,
-                    sourceId,
                     errorMessage);
         }
     }

@@ -10,7 +10,7 @@ target/
 *.iml
 *.ipr
 
-repomix-output.xml
+core.xml
 
 ### Eclipse ###
 .apt_generated

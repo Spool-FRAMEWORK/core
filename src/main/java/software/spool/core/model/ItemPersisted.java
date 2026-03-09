@@ -32,7 +32,7 @@ public record ItemPersisted(
             return this;
         }
 
-        public ItemPersisted.Builder from(final InboxItemStored cause) {
+        public ItemPersisted.Builder from(final ItemPublished cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
             this.idempotencyKey = cause.idempotencyKey();

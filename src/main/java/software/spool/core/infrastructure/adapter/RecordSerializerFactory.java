@@ -2,6 +2,7 @@ package software.spool.core.infrastructure.adapter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import software.spool.core.exception.SerializationException;
 import software.spool.core.port.RecordSerializer;
 
@@ -16,7 +17,8 @@ import java.util.Map;
  * </p>
  */
 public class RecordSerializerFactory {
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule());
 
     /**
      * Returns a serializer that writes a {@link JsonNode} to a compact JSON string.

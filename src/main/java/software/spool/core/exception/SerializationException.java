@@ -8,7 +8,7 @@ public class SerializationException extends SpoolException {
         this.payload = payload;
     }
 
-    public SerializationException(String message, String payload) {
+    public SerializationException(String payload, String message) {
         super("Serialization failed for: " + payload + ". " + message);
         this.payload = payload;
     }

@@ -6,12 +6,12 @@ public class EventBusEmitException extends SpoolException {
     private final Event event;
 
     public EventBusEmitException(Event event, String message) {
-        super("Error occurred while emitting to event bus: " + event + "." + message);
+        super("Error occurred while emitting to event bus: " + event + ". " + message);
         this.event = event;
     }
 
     public EventBusEmitException(Event event, String message, Throwable cause) {
-        super("Error occurred while emitting to event bus: " + event + "." + message, cause);
+        super("Error occurred while emitting to event bus: " + event + ". " + message, cause);
         this.event = event;
     }
 

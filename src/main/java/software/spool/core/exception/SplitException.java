@@ -8,7 +8,7 @@ public class SplitException extends SpoolException {
         this.payload = payload;
     }
 
-    public SplitException(String message, String payload) {
+    public SplitException(String payload, String message) {
         super("Split failed for: " + payload + ". " + message);
         this.payload = payload;
     }

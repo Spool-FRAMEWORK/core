@@ -2,7 +2,7 @@ package software.spool.core.port;
 
 import software.spool.core.exception.DeserializationException;
 
-public interface PayloadDeserializer<R, T> {
+public interface PayloadDeserializer<T> {
     /**
      * Converts the given raw value into a typed intermediate object.
      *
@@ -11,5 +11,5 @@ public interface PayloadDeserializer<R, T> {
      * @return the deserialized representation; must not be {@code null}
      * @throws DeserializationException if the value cannot be parsed or converted
      */
-    T deserialize(R payload) throws DeserializationException;
+    T deserialize(String payload) throws DeserializationException;
 }

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class InMemoryEventBus implements EventBusEmitter, EventBusListener {
+public class InMemoryEventBus implements EventBus {
     private final ConcurrentHashMap<Class<?>, CopyOnWriteArrayList<Handler<?>>> registry =
             new ConcurrentHashMap<>();
 

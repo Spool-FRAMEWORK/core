@@ -8,7 +8,7 @@ public class DeserializationException extends SpoolException {
         this.payload = payload;
     }
 
-    public DeserializationException(String message, String payload) {
+    public DeserializationException(String payload, String message) {
         super("Deserialization failed for: " + payload + ". " + message);
         this.payload = payload;
     }

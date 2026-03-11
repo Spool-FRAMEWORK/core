@@ -1,14 +1,14 @@
 package software.spool.core.exception;
 
-public class SourceSplitException extends SpoolException {
+public class SplitException extends SpoolException {
     private final String payload;
 
-    public SourceSplitException(String payload) {
+    public SplitException(String payload) {
         super("Split failed for: " + payload);
         this.payload = payload;
     }
 
-    public SourceSplitException(String message, String payload) {
+    public SplitException(String message, String payload) {
         super("Split failed for: " + payload + ". " + message);
         this.payload = payload;
     }

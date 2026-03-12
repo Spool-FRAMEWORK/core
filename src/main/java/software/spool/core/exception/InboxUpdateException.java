@@ -2,6 +2,9 @@ package software.spool.core.exception;
 
 import software.spool.core.model.IdempotencyKey;
 
+/**
+ * Thrown when updating the status of an existing inbox item fails.
+ */
 public class InboxUpdateException extends SpoolException {
     private final IdempotencyKey idempotencyKey;
 
@@ -9,6 +12,7 @@ public class InboxUpdateException extends SpoolException {
         super("Error occurred while updating from inbox: " + idempotencyKey.value() + ". " + message);
         this.idempotencyKey = idempotencyKey;
     }
+
     public InboxUpdateException(IdempotencyKey idempotencyKey, String message, Throwable cause) {
         super("Error occurred while updating from inbox: " + idempotencyKey.value() + ". " + message, cause);
         this.idempotencyKey = idempotencyKey;

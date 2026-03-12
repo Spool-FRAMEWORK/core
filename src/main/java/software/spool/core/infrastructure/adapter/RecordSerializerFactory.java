@@ -35,6 +35,13 @@ public class RecordSerializerFactory {
         };
     }
 
+    /**
+     * Returns a generic serializer that writes any object to a compact JSON string
+     * using Jackson's default mapping.
+     *
+     * @param <T> the record type
+     * @return a serializer for arbitrary objects
+     */
     public static <T> RecordSerializer<T> record() {
         return value -> {
             try {
@@ -61,5 +68,3 @@ public class RecordSerializerFactory {
         };
     }
 }
-
-

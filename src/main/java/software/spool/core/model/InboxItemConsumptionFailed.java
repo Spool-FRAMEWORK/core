@@ -4,6 +4,13 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Emitted when consuming an inbox item fails during ingestion or publishing.
+ *
+ * <p>
+ * Carries the {@link #errorMessage()} describing the root cause.
+ * </p>
+ */
 public record InboxItemConsumptionFailed(
         String eventId,
         Instant timestamp,

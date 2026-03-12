@@ -10,9 +10,17 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Thread-safe in-memory {@link EventBus} implementation for local
+ * testing and single-process deployments.
+ *
+ * <p>
+ * Handlers are stored in a {@link ConcurrentHashMap} keyed by event type and
+ * dispatched synchronously on the calling thread.
+ * </p>
+ */
 public class InMemoryEventBus implements EventBus {
-    private final ConcurrentHashMap<Class<?>, CopyOnWriteArrayList<Handler<?>>> registry =
-            new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Class<?>, CopyOnWriteArrayList<Handler<?>>> registry = new ConcurrentHashMap<>();
 
     @Override
     public <E extends Event> Subscription on(Class<E> event, Handler<E> handler) throws EventBusListenException {
@@ -20,8 +28,7 @@ public class InMemoryEventBus implements EventBus {
                 .add(handler);
 
         return new InMemorySubscription(
-                () -> registry.getOrDefault(event, new CopyOnWriteArrayList<>()).remove(handler)
-        );
+                () -> registry.getOrDefault(event, new CopyOnWriteArrayList<>()).remove(handler));
     }
 
     @Override
@@ -30,8 +37,7 @@ public class InMemoryEventBus implements EventBus {
         try {
             List<Handler<?>> handlers = registry.getOrDefault(
                     event.getClass(),
-                    new CopyOnWriteArrayList<>()
-            );
+                    new CopyOnWriteArrayList<>());
             for (Handler<?> handler : handlers)
                 ((Handler<Event>) handler).handle(event);
         } catch (Exception e) {

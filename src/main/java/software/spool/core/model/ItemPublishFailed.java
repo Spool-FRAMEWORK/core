@@ -4,6 +4,13 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Emitted when publishing an inbox item to the event bus fails.
+ *
+ * <p>
+ * Carries the {@link #errorMessage()} describing the root cause.
+ * </p>
+ */
 public record ItemPublishFailed(
         String eventId,
         Instant timestamp,

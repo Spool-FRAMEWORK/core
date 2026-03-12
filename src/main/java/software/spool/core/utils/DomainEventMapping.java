@@ -6,12 +6,23 @@ import software.spool.core.port.PayloadDeserializer;
 
 import java.util.function.BiFunction;
 
+/**
+ * Associates a {@link PayloadDeserializer} with an optional mapping function
+ * to convert deserialized DTOs into domain {@link Event} instances.
+ *
+ * <p>
+ * Used by the Crawler to support domain-event deserialization in addition
+ * to the standard raw-payload path.
+ * </p>
+ *
+ * @param <D> the intermediate deserialized type
+ */
 public final class DomainEventMapping<D> {
     private final PayloadDeserializer<D> deserializer;
     private final BiFunction<D, IdempotencyKey, Event> toEvent;
 
     private DomainEventMapping(PayloadDeserializer<D> deserializer,
-                               BiFunction<D, IdempotencyKey, Event> toEvent) {
+            BiFunction<D, IdempotencyKey, Event> toEvent) {
         this.deserializer = deserializer;
         this.toEvent = toEvent;
     }
@@ -32,4 +43,3 @@ public final class DomainEventMapping<D> {
         return toEvent.apply(dto, key);
     }
 }
-

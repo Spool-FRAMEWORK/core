@@ -4,6 +4,10 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Emitted when the Crawler successfully captures and serializes a single
+ * record from the source.
+ */
 public record SourceItemCaptured(
         String eventId,
         Instant timestamp,

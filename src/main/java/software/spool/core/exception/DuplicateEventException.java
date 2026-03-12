@@ -2,6 +2,10 @@ package software.spool.core.exception;
 
 import software.spool.core.model.IdempotencyKey;
 
+/**
+ * Thrown when an inbox write is rejected because an item with the same
+ * {@link IdempotencyKey} already exists.
+ */
 public class DuplicateEventException extends SpoolException {
     private final IdempotencyKey idempotencyKey;
 

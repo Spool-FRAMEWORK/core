@@ -7,6 +7,14 @@ import software.spool.core.model.InboxItem;
 import software.spool.core.model.InboxItemStatus;
 import software.spool.core.port.InboxUpdater;
 
+/**
+ * Decorator that wraps an {@link InboxUpdater} and normalises any
+ * unchecked exception into an {@link InboxUpdateException}.
+ *
+ * <p>
+ * Exceptions that are already a {@link SpoolException} are rethrown as-is.
+ * </p>
+ */
 public class SafeInboxUpdater implements InboxUpdater {
     private final InboxUpdater updater;
 
@@ -18,8 +26,9 @@ public class SafeInboxUpdater implements InboxUpdater {
     public InboxItem update(IdempotencyKey idempotencyKey, InboxItemStatus status) {
         try {
             return updater.update(idempotencyKey, status);
-        } catch (SpoolException e) { throw e; }
-        catch (Exception e) {
+        } catch (SpoolException e) {
+            throw e;
+        } catch (Exception e) {
             throw new InboxUpdateException(idempotencyKey, e.getMessage(), e);
         }
     }

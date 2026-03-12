@@ -4,6 +4,14 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Emitted when the Crawler fails to capture or serialize a single record
+ * from the source.
+ *
+ * <p>
+ * Carries the {@link #errorMessage()} describing the root cause.
+ * </p>
+ */
 public record SourceItemCaptureFailed(
         String eventId,
         Instant timestamp,

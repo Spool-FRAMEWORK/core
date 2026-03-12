@@ -1,5 +1,8 @@
 package software.spool.core.exception;
 
+/**
+ * Thrown when subscribing to an event type on the event bus fails.
+ */
 public class EventBusListenException extends SpoolException {
     private final Class<?> eventType;
 

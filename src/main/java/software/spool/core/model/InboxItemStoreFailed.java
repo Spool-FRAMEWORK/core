@@ -4,6 +4,13 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Emitted when storing an item into the inbox fails.
+ *
+ * <p>
+ * Carries the {@link #errorMessage()} describing the root cause.
+ * </p>
+ */
 public record InboxItemStoreFailed(
         String eventId,
         Instant timestamp,

@@ -1,5 +1,8 @@
 package software.spool.core.exception;
 
+/**
+ * Thrown when splitting a deserialized payload into individual records fails.
+ */
 public class SplitException extends SpoolException {
     private final String payload;
 

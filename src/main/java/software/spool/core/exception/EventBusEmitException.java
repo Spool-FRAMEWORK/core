@@ -2,6 +2,9 @@ package software.spool.core.exception;
 
 import software.spool.core.model.Event;
 
+/**
+ * Thrown when emitting an event to the event bus fails.
+ */
 public class EventBusEmitException extends SpoolException {
     private final Event event;
 

@@ -4,6 +4,13 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Emitted when the Crawler fails to fetch data from the configured source.
+ *
+ * <p>
+ * Carries the {@link #errorMessage()} describing the root cause.
+ * </p>
+ */
 public record SourceFetchFailed(
         String eventId,
         Instant timestamp,

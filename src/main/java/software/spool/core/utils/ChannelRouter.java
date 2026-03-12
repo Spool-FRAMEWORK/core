@@ -5,6 +5,23 @@ import software.spool.core.model.Event;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Maps event types to named channels.
+ *
+ * <p>
+ * If no explicit route is registered for an event type, the configured
+ * {@link ChannelNamingConvention} is used to derive a default channel name
+ * from the event class name.
+ * </p>
+ *
+ * <pre>{@code
+ * ChannelRouter router = ChannelRouter.defaults()
+ *         .route(OrderReceived.class, "orders")
+ *         .route(PaymentProcessed.class, "payments");
+ *
+ * String ch = router.resolve(event); // "orders", "payments", or convention-based default
+ * }</pre>
+ */
 public class ChannelRouter {
     private final Map<Class<? extends Event>, String> routes;
     private final ChannelNamingConvention convention;

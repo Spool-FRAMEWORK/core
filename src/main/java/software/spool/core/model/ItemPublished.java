@@ -4,6 +4,15 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Emitted when an inbox item has been published to the event bus by the
+ * Publisher.
+ *
+ * <p>
+ * The Ingester module subscribes to this event to begin buffering and
+ * persisting the payload to the data lake.
+ * </p>
+ */
 public record ItemPublished(
         String eventId,
         Instant timestamp,

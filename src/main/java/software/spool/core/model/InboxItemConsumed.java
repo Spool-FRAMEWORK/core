@@ -4,6 +4,9 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Emitted when an inbox item has been successfully consumed by the Ingester.
+ */
 public record InboxItemConsumed(
         String eventId,
         Instant timestamp,

@@ -4,13 +4,16 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Emitted when an item has been successfully persisted to the data lake by the
+ * Ingester.
+ */
 public record ItemPersisted(
         String eventId,
         String causationId,
         String correlationId,
         Instant timestamp,
-        IdempotencyKey idempotencyKey
-) implements SpoolEvent{
+        IdempotencyKey idempotencyKey) implements SpoolEvent {
     public ItemPersisted {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");

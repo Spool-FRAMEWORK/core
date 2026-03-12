@@ -4,6 +4,14 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Emitted when a new item is written to the inbox by the Crawler.
+ *
+ * <p>
+ * The Publisher module subscribes to this event (in reactive mode) to
+ * begin the publishing flow.
+ * </p>
+ */
 public record InboxItemStored(
         String eventId,
         Instant timestamp,

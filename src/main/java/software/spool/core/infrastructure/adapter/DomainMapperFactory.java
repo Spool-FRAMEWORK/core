@@ -6,13 +6,23 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import software.spool.core.exception.DeserializationException;
 import software.spool.core.port.PayloadDeserializer;
 
+/**
+ * Factory methods for {@link PayloadDeserializer} instances that map JSON
+ * payloads to Java types using different property naming strategies.
+ *
+ * <p>
+ * Each method returns a deserializer backed by a shared, thread-safe
+ * Jackson {@link ObjectMapper} configured with the corresponding
+ * {@link com.fasterxml.jackson.databind.PropertyNamingStrategies} strategy.
+ * </p>
+ */
 public final class DomainMapperFactory {
-    private static final ObjectMapper CAMEL  = new ObjectMapper().findAndRegisterModules();
-    private static final ObjectMapper SNAKE  = new ObjectMapper().findAndRegisterModules()
+    private static final ObjectMapper CAMEL = new ObjectMapper().findAndRegisterModules();
+    private static final ObjectMapper SNAKE = new ObjectMapper().findAndRegisterModules()
             .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
     private static final ObjectMapper PASCAL = new ObjectMapper().findAndRegisterModules()
             .setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
-    private static final ObjectMapper KEBAB  = new ObjectMapper().findAndRegisterModules()
+    private static final ObjectMapper KEBAB = new ObjectMapper().findAndRegisterModules()
             .setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 
     public static <D> PayloadDeserializer<D> camelCase(Class<D> type) {
@@ -55,7 +65,6 @@ public final class DomainMapperFactory {
         };
     }
 
-    private DomainMapperFactory() {}
+    private DomainMapperFactory() {
+    }
 }
-
-

@@ -10,6 +10,8 @@ target/
 *.iml
 *.ipr
 
+core.xml
+
 ### Eclipse ###
 .apt_generated
 .classpath

@@ -10,8 +10,12 @@ public record PartitionKeySchema(String sourceId, Class<?> eventType, List<Strin
         this.attributes = Objects.isNull(attributes) ? List.of() : List.copyOf(attributes);
     }
 
-    public static PartitionKeySchema of(final String sourceId, final Class<?> eventType, final String... attributes) {
-        return new PartitionKeySchema(sourceId, eventType, List.of(attributes));
+    public static PartitionKeySchema of(final String sourceId, final Class<?> eventType, final List<String> attributes) {
+        return new PartitionKeySchema(sourceId, eventType, Objects.isNull(attributes) ? List.of() : List.copyOf(attributes));
+    }
+
+    public static PartitionKeySchema of(final String sourceId, final Class<?> eventType) {
+        return new PartitionKeySchema(sourceId, eventType, List.of());
     }
 
     public String value() {
@@ -26,7 +30,7 @@ public record PartitionKeySchema(String sourceId, Class<?> eventType, List<Strin
     public static class Builder {
         private String sourceId;
         private Class<?> eventType;
-        private String[] attributes;
+        private List<String> attributes;
 
         public Builder withSourceId(final String sourceId) {
             this.sourceId = sourceId;
@@ -38,7 +42,7 @@ public record PartitionKeySchema(String sourceId, Class<?> eventType, List<Strin
             return this;
         }
 
-        public Builder withAttributes(final String... attributes) {
+        public Builder withAttributes(final List<String> attributes) {
             this.attributes = attributes;
             return this;
         }

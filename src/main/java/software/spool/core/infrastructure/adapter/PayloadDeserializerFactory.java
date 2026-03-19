@@ -1,5 +1,6 @@
 package software.spool.core.infrastructure.adapter;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -39,6 +40,24 @@ public class PayloadDeserializerFactory {
             }
         };
     }
+
+    /**
+     * Returns a deserializer that parses a JSON <strong>object</strong> string into a
+     * {@code Map<String, Object>} preserving JSON value types.
+     */
+    public static PayloadDeserializer<Map<String, Object>> jsonObject() {
+        return raw -> {
+            try {
+                JsonNode root = jsonMapper.readTree(raw);
+                if (!root.isObject())
+                    throw new DeserializationException("Expected JSON object", raw);
+                return jsonMapper.convertValue(root, new TypeReference<Map<String, Object>>() {});
+            } catch (Exception e) {
+                throw new DeserializationException("Failed to deserialize JSON object", e);
+            }
+        };
+    }
+
 
     /**
      * Returns a deserializer that parses a JSON string and validates that its

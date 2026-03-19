@@ -1,8 +1,6 @@
 package software.spool.core.adapter;
 
-import software.spool.core.model.IdempotencyKey;
-import software.spool.core.model.InboxItem;
-import software.spool.core.model.InboxItemStatus;
+import software.spool.core.model.*;
 import software.spool.core.port.InboxReader;
 import software.spool.core.port.InboxUpdater;
 
@@ -32,7 +30,7 @@ public class InMemoryInbox implements InboxUpdater, InboxReader {
      */
     public IdempotencyKey receive(String payload, IdempotencyKey idempotencyKey) {
         items.put(idempotencyKey,
-                new InboxItem(idempotencyKey, payload, InboxItemStatus.UNPUBLISHED, Instant.now()));
+                new InboxItem(idempotencyKey, "unkown", PartitionKeySchema.of("unkown", Event.class), payload, InboxItemStatus.UNPUBLISHED, Instant.now()));
         return idempotencyKey;
     }
 

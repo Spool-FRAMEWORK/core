@@ -19,12 +19,14 @@ public record ItemPublished(
         String correlationId,
         String causationId,
         IdempotencyKey idempotencyKey,
+        PartitionKeySchema partitionKeySchema,
         String payload) implements SpoolEvent {
 
     public ItemPublished {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
+        Objects.requireNonNull(partitionKeySchema, "partitionKey is required");
         Objects.requireNonNull(payload, "payload is required");
     }
 
@@ -36,6 +38,7 @@ public record ItemPublished(
         private String correlationId;
         private String causationId;
         private IdempotencyKey idempotencyKey;
+        private PartitionKeySchema partitionKeySchema;
         private String payload;
 
         public Builder from(final SpoolEvent cause) {
@@ -66,6 +69,11 @@ public record ItemPublished(
             return this;
         }
 
+        public Builder partitionKey(final PartitionKeySchema partitionKeySchema) {
+            this.partitionKeySchema = partitionKeySchema;
+            return this;
+        }
+
         public Builder payload(final String payload) {
             this.payload = payload;
             return this;
@@ -78,6 +86,7 @@ public record ItemPublished(
                     correlationId,
                     causationId,
                     idempotencyKey,
+                    partitionKeySchema,
                     payload);
         }
     }

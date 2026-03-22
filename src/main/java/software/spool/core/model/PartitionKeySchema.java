@@ -11,7 +11,7 @@ public record PartitionKeySchema(String sourceId, Class<?> eventType, List<Strin
     }
 
     public static PartitionKeySchema of(final String sourceId, final Class<?> eventType, final List<String> attributes) {
-        return new PartitionKeySchema(sourceId, eventType, Objects.isNull(attributes) ? List.of() : List.copyOf(attributes));
+        return new PartitionKeySchema(sourceId, eventType, attributes);
     }
 
     public static PartitionKeySchema of(final String sourceId, final Class<?> eventType) {
@@ -19,8 +19,10 @@ public record PartitionKeySchema(String sourceId, Class<?> eventType, List<Strin
     }
 
     public String value() {
-        String base = String.format("%s::%s", sourceId, eventType.getSimpleName());
-        return Objects.isNull(attributes) ? base : String.format("%s::%s", base, String.join("::", attributes));
+        String base = Objects.isNull(eventType)
+                ? sourceId
+                : String.format("%s::%s", sourceId, eventType.getSimpleName());
+        return attributes.isEmpty() ? base : base + "::" + String.join("::", attributes);
     }
 
     public static Builder builder() {

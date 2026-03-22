@@ -26,7 +26,7 @@ public record ItemPublished(
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
-        Objects.requireNonNull(partitionKeySchema, "partitionKey is required");
+        Objects.requireNonNull(partitionKeySchema, "partitionKeySchema is required");
         Objects.requireNonNull(payload, "payload is required");
     }
 
@@ -69,7 +69,7 @@ public record ItemPublished(
             return this;
         }
 
-        public Builder partitionKey(final PartitionKeySchema partitionKeySchema) {
+        public Builder partitionKeySchema(final PartitionKeySchema partitionKeySchema) {
             this.partitionKeySchema = partitionKeySchema;
             return this;
         }

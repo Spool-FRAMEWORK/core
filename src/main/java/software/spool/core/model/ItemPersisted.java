@@ -13,11 +13,13 @@ public record ItemPersisted(
         String causationId,
         String correlationId,
         Instant timestamp,
-        IdempotencyKey idempotencyKey) implements SpoolEvent {
+        IdempotencyKey idempotencyKey,
+        PartitionKey partitionKey) implements SpoolEvent {
     public ItemPersisted {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
+        Objects.requireNonNull(idempotencyKey, "partitionKey is required");
     }
 
     public static ItemPersisted.Builder builder() {
@@ -28,6 +30,7 @@ public record ItemPersisted(
         private String correlationId;
         private String causationId;
         private IdempotencyKey idempotencyKey;
+        private PartitionKey partitionKey;
 
         public ItemPersisted.Builder from(final SpoolEvent cause) {
             this.correlationId = cause.correlationId();
@@ -57,13 +60,19 @@ public record ItemPersisted(
             return this;
         }
 
+        public ItemPersisted.Builder partitionKey(final PartitionKey partitionKey) {
+            this.partitionKey = partitionKey;
+            return this;
+        }
+
         public ItemPersisted build() {
             return new ItemPersisted(
                     UUID.randomUUID().toString(),
                     causationId,
                     correlationId,
                     Instant.now(),
-                    idempotencyKey);
+                    idempotencyKey,
+                    partitionKey);
         }
     }
 }

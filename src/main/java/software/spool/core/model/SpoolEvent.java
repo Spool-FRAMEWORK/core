@@ -1,5 +1,7 @@
 package software.spool.core.model;
 
+import java.util.Map;
+
 /**
  * Marker interface for Spool-internal events.
  *
@@ -10,5 +12,7 @@ package software.spool.core.model;
  * </p>
  */
 public interface SpoolEvent extends Event {
-
+    default EventMetadata metadata() {
+        return new EventMetadata();
+    }
 }

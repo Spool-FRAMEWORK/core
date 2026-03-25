@@ -20,7 +20,8 @@ public record ItemPublished(
         String causationId,
         IdempotencyKey idempotencyKey,
         PartitionKeySchema partitionKeySchema,
-        String payload) implements SpoolEvent {
+        String payload,
+        EventMetadata metadata) implements SpoolEvent {
 
     public ItemPublished {
         Objects.requireNonNull(eventId, "eventId is required");
@@ -40,6 +41,7 @@ public record ItemPublished(
         private IdempotencyKey idempotencyKey;
         private PartitionKeySchema partitionKeySchema;
         private String payload;
+        private final EventMetadata metadata = new EventMetadata();
 
         public Builder from(final SpoolEvent cause) {
             this.correlationId = cause.correlationId();
@@ -79,6 +81,16 @@ public record ItemPublished(
             return this;
         }
 
+        public Builder addMetadata(EventMetadataKey metadataKey, String value) {
+            metadata.set(metadataKey, value);
+            return this;
+        }
+
+        public Builder addMetadata(EventMetadata metadata) {
+            metadata.entrySet().forEach(entry -> metadata.set(entry.getKey(), entry.getValue()));
+            return this;
+        }
+
         public ItemPublished build() {
             return new ItemPublished(
                     UUID.randomUUID().toString(),
@@ -87,7 +99,8 @@ public record ItemPublished(
                     causationId,
                     idempotencyKey,
                     partitionKeySchema,
-                    payload);
+                    payload,
+                    metadata);
         }
     }
 }

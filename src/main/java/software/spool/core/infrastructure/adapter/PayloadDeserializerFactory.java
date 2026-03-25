@@ -1,8 +1,10 @@
 package software.spool.core.infrastructure.adapter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import software.spool.core.exception.DeserializationException;
 import software.spool.core.port.PayloadDeserializer;
@@ -94,6 +96,30 @@ public class PayloadDeserializerFactory {
             }
         };
     }
+
+    /**
+     * Returns a deserializer that maps a JSON string directly to an instance
+     * of the given class using snake_case field mapping.
+     *
+     * <p>Useful in pipeline stages where the target type is known upfront.
+     *
+     * @param type the target class to deserialize into
+     * @return a typed JSON deserializer
+     */
+    public static <T> PayloadDeserializer<T> jsonAs(Class<T> type) {
+        ObjectMapper mapper = new ObjectMapper()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        return raw -> {
+            try {
+                return mapper.readValue(raw, type);
+            } catch (Exception e) {
+                throw new DeserializationException(
+                        "Failed to deserialize JSON as " + type.getSimpleName(), e);
+            }
+        };
+    }
+
 
     /**
      * Returns a deserializer that parses a YAML string and validates that its

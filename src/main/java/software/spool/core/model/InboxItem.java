@@ -18,13 +18,13 @@ import java.time.Instant;
  */
 public record InboxItem(
         IdempotencyKey idempotencyKey,
-        String sourceId,
+        EventMetadata metadata,
         PartitionKeySchema partitionKeySchema,
         String payload,
         InboxItemStatus status,
         Instant timestamp) {
 
     public InboxItem withStatus(InboxItemStatus newStatus) {
-        return new InboxItem(idempotencyKey, sourceId, partitionKeySchema, payload, newStatus, timestamp);
+        return new InboxItem(idempotencyKey, metadata, partitionKeySchema, payload, newStatus, timestamp);
     }
 }

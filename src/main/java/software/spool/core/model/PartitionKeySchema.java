@@ -6,7 +6,7 @@ import java.util.Objects;
 public record PartitionKeySchema(String sourceId, Class<?> eventType, List<String> attributes) {
     public PartitionKeySchema(final String sourceId, final Class<?> eventType, final List<String> attributes) {
         this.sourceId = Objects.requireNonNull(sourceId);
-        this.eventType = eventType;
+        this.eventType = Objects.requireNonNullElse(eventType, Void.class);
         this.attributes = Objects.isNull(attributes) ? List.of() : List.copyOf(attributes);
     }
 

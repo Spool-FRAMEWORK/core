@@ -20,20 +20,6 @@ import java.util.stream.Stream;
 public class InMemoryInbox implements InboxUpdater, InboxReader {
     private final ConcurrentHashMap<IdempotencyKey, InboxItem> items = new ConcurrentHashMap<>();
 
-    /**
-     * Stores a payload in the inbox with {@link InboxItemStatus#UNPUBLISHED}
-     * status.
-     *
-     * @param payload        the serialized payload
-     * @param idempotencyKey the key identifying this item
-     * @return the idempotency key
-     */
-    public IdempotencyKey receive(String payload, IdempotencyKey idempotencyKey) {
-        items.put(idempotencyKey,
-                new InboxItem(idempotencyKey, "unkown", PartitionKeySchema.of("unkown", Event.class), payload, InboxItemStatus.UNPUBLISHED, Instant.now()));
-        return idempotencyKey;
-    }
-
     @Override
     public InboxItem update(IdempotencyKey idempotencyKey, InboxItemStatus status) {
         InboxItem existing = items.get(idempotencyKey);

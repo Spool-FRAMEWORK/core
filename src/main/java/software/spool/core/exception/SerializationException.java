@@ -1,7 +1,9 @@
 package software.spool.core.exception;
 
+import software.spool.core.port.serde.RecordSerializer;
+
 /**
- * Thrown when a {@link software.spool.core.port.RecordSerializer} fails
+ * Thrown when a {@link RecordSerializer} fails
  * to serialize a record into a string payload.
  */
 public class SerializationException extends SpoolException {

@@ -1,11 +1,13 @@
 package software.spool.core.exception;
 
+import software.spool.core.utils.routing.ErrorRouter;
+
 /**
  * Abstract base class for all typed runtime exceptions in the Spool framework.
  *
  * <p>
  * Each Spool port operation has a corresponding concrete subclass so that
- * the {@link software.spool.core.utils.ErrorRouter} can dispatch by type.
+ * the {@link ErrorRouter} can dispatch by type.
  * </p>
  */
 public abstract class SpoolException extends RuntimeException {

@@ -1,6 +1,6 @@
 package software.spool.core.exception;
 
-import software.spool.core.model.PartitionKey;
+import software.spool.core.model.vo.PartitionKey;
 
 /**
  * Thrown when writing a new item to the inbox fails.

@@ -1,6 +1,6 @@
 package software.spool.core.model;
 
-import java.util.Map;
+import software.spool.core.model.vo.EventMetadata;
 
 /**
  * Marker interface for Spool-internal events.

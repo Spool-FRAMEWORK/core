@@ -1,11 +1,11 @@
 package software.spool.core.port.decorator;
 
-import software.spool.core.control.Handler;
+import software.spool.core.port.bus.Handler;
 import software.spool.core.exception.EventBusListenException;
 import software.spool.core.exception.SpoolException;
 import software.spool.core.model.Event;
-import software.spool.core.port.EventBusListener;
-import software.spool.core.port.Subscription;
+import software.spool.core.port.bus.EventBusListener;
+import software.spool.core.port.bus.Subscription;
 
 /**
  * Decorator that wraps an {@link EventBusListener} and normalises any

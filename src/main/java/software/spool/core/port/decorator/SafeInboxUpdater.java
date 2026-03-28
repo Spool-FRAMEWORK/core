@@ -2,10 +2,10 @@ package software.spool.core.port.decorator;
 
 import software.spool.core.exception.InboxUpdateException;
 import software.spool.core.exception.SpoolException;
-import software.spool.core.model.IdempotencyKey;
-import software.spool.core.model.InboxItem;
+import software.spool.core.model.vo.IdempotencyKey;
+import software.spool.core.model.vo.InboxItem;
 import software.spool.core.model.InboxItemStatus;
-import software.spool.core.port.InboxUpdater;
+import software.spool.core.port.inbox.InboxUpdater;
 
 /**
  * Decorator that wraps an {@link InboxUpdater} and normalises any

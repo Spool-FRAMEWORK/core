@@ -1,7 +1,9 @@
 package software.spool.core.exception;
 
+import software.spool.core.port.serde.PayloadDeserializer;
+
 /**
- * Thrown when a {@link software.spool.core.port.PayloadDeserializer} fails
+ * Thrown when a {@link PayloadDeserializer} fails
  * to parse a raw payload.
  */
 public class DeserializationException extends SpoolException {

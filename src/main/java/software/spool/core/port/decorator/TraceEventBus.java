@@ -1,19 +1,19 @@
 package software.spool.core.port.decorator;
 
-import software.spool.core.control.Handler;
+import software.spool.core.port.bus.Handler;
 import software.spool.core.exception.EventBusEmitException;
 import software.spool.core.exception.EventBusListenException;
 import software.spool.core.model.Event;
-import software.spool.core.port.EventBus;
-import software.spool.core.port.EventTracer;
-import software.spool.core.port.Subscription;
-import software.spool.core.port.TraceScope;
+import software.spool.core.port.bus.EventBus;
+import software.spool.core.port.tracing.TracedEventBus;
+import software.spool.core.port.bus.Subscription;
+import software.spool.core.port.tracing.TraceScope;
 
 public class TraceEventBus implements EventBus {
     private final EventBus bus;
-    private final EventTracer tracer;
+    private final TracedEventBus tracer;
 
-    public TraceEventBus(EventBus bus, EventTracer tracer) {
+    public TraceEventBus(EventBus bus, TracedEventBus tracer) {
         this.bus = bus;
         this.tracer = tracer;
     }
@@ -47,7 +47,7 @@ public class TraceEventBus implements EventBus {
             this.bus = bus;
         }
 
-        public EventBus with(EventTracer tracer) {
+        public EventBus with(TracedEventBus tracer) {
             return new TraceEventBus(bus, tracer);
         }
     }

@@ -1,6 +1,6 @@
 package software.spool.core.exception;
 
-import software.spool.core.model.IdempotencyKey;
+import software.spool.core.model.vo.IdempotencyKey;
 
 /**
  * Thrown when an inbox write is rejected because an item with the same

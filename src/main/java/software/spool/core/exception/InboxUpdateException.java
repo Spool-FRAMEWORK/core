@@ -1,6 +1,6 @@
 package software.spool.core.exception;
 
-import software.spool.core.model.IdempotencyKey;
+import software.spool.core.model.vo.IdempotencyKey;
 
 /**
  * Thrown when updating the status of an existing inbox item fails.

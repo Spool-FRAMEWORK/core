@@ -3,7 +3,7 @@ package software.spool.core.port.decorator;
 import software.spool.core.exception.EventBusEmitException;
 import software.spool.core.exception.SpoolException;
 import software.spool.core.model.Event;
-import software.spool.core.port.EventBusEmitter;
+import software.spool.core.port.bus.EventBusEmitter;
 
 /**
  * Decorator that wraps an {@link EventBusEmitter} and normalises any

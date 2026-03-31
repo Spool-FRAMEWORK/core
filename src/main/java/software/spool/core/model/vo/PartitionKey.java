@@ -26,18 +26,16 @@ public record PartitionKey(String value) {
         }
 
         private String validateAndBuild(String payload) {
-            Map<String, Object> entries = PayloadDeserializerFactory.jsonObject().deserialize(payload);
+            Map<String, Object> entries = PayloadDeserializerFactory.json().asMap().deserialize(payload);
             List<String> resolved = schema.attributes().stream()
                     .map(a -> {
-                        if (!entries.containsKey(a)) {
+                        if (!entries.containsKey(a))
                             throw new IllegalArgumentException("PartitionKeySchema does not match with payload");
-                        }
                         return a + "=" + entries.get(a);
                     })
                     .toList();
             String base = schema.sourceId();
-            if (schema.eventType() != Void.class)
-                base += "::" + schema.eventType();
+            if (schema.eventType() != Void.class) base += "::" + schema.eventType();
             return resolved.isEmpty() ? base : base + "::" + String.join("::", resolved);
         }
     }

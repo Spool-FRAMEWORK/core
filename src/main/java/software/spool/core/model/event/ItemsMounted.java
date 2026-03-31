@@ -20,6 +20,7 @@ public record ItemsMounted(
     public ItemsMounted {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
+        Objects.requireNonNull(partitionKey, "partitionKey is required");
     }
 
     public static ItemsMounted.Builder builder() {

@@ -1,0 +1,59 @@
+package software.spool.core.adapter.health;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
+import software.spool.core.adapter.jackson.RecordSerializerFactory;
+import software.spool.core.port.health.HealthPayload;
+import software.spool.core.port.health.HealthServer;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Executors;
+import java.util.function.Supplier;
+
+public class HTTPHealthServer implements HealthServer {
+    private final int port;
+    private final Supplier<HealthPayload> payloadSupplier;
+    private HttpServer server;
+
+    public HTTPHealthServer(int port, Supplier<HealthPayload> payloadSupplier) {
+        this.port = port;
+        this.payloadSupplier = payloadSupplier;
+    }
+
+    @Override
+    public void start() throws IOException {
+        server = HttpServer.create(new InetSocketAddress(port), 0);
+        server.createContext("/spool/health", this::handle);
+        server.createContext("/spool/health/live", this::handle);
+        server.createContext("/spool/health/ready", this::handle);
+        server.setExecutor(Executors.newCachedThreadPool());
+        server.start();
+    }
+
+    @Override
+    public void stop() {
+        if (server != null) server.stop(0);
+    }
+
+    private void handle(HttpExchange exchange) throws IOException {
+        if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+            respond(exchange, 405, "{\"error\":\"Method Not Allowed\"}");
+            return;
+        }
+        HealthPayload payload = payloadSupplier.get();
+        respond(exchange, payload.status().httpCode(), RecordSerializerFactory.record().serialize(payload));
+    }
+
+    private void respond(HttpExchange exchange, int code, String payload) throws IOException {
+        byte[] bytes = payload.getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().set("Content-Type", "application/json");
+        exchange.getResponseHeaders().set("Cache-Control", "no-cache");
+        exchange.sendResponseHeaders(code, bytes.length);
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(bytes);
+        }
+    }
+}

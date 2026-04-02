@@ -10,4 +10,8 @@ public record PollingConfiguration(PollingScheduler scheduler, PollingPolicy pol
     public static PollingConfiguration every(Duration interval) {
         return new PollingConfiguration(new ThreadedPollingScheduler(), PollingPolicy.every(interval));
     }
+
+    public static PollingConfiguration defaults() {
+        return PollingConfiguration.every(Duration.ofSeconds(15));
+    }
 }

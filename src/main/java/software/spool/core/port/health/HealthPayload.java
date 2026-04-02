@@ -20,4 +20,8 @@ public record HealthPayload(
     public static HealthPayload unhealthy(String moduleId, List<HealthCheck> checks) {
         return new HealthPayload(HealthStatus.UNHEALTHY, moduleId, checks, Instant.now());
     }
+
+    public HealthPayload worst(HealthPayload other) {
+        return status == HealthStatus.HEALTHY ? other : this;
+    }
 }

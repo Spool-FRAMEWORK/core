@@ -1,6 +1,6 @@
 package software.spool.core.model.watchdog;
 
 public record HeartbeatPayload(
-    String moduleId,
+    ModuleIdentity identity,
     ModuleStatus status
 ) {}

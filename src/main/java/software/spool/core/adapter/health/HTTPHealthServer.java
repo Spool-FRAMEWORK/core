@@ -31,6 +31,7 @@ public class HTTPHealthServer implements HealthServer {
         server.createContext("/spool/health/ready", this::handle);
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
+        System.out.println("Health server started on port " + port);
     }
 
     @Override

@@ -22,7 +22,13 @@ public class PollingHeartbeat implements ModuleHeartBeat {
     public void start() {
         token = CancellationToken.create();
         polling.scheduler().schedule(
-            () -> heartbeat.beat(identity, currentStatus),
+            () -> {
+                try {
+                    heartbeat.beat(identity, currentStatus);
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+            },
             polling.policy(),
             token
         );

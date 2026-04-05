@@ -10,6 +10,7 @@ import software.spool.core.model.Event;
 import software.spool.core.port.bus.Handler;
 import software.spool.core.port.bus.Subscription;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 
@@ -43,7 +44,7 @@ public class KafkaSubscription<E extends Event> implements Subscription {
                 for (ConsumerRecord<String, byte[]> record : records) {
                     try {
                         handler.handle(PayloadDeserializerFactory.json().as(eventType)
-                                .deserialize(Arrays.toString(record.value())));
+                                .deserialize(new String(record.value(), StandardCharsets.UTF_8)));
                     } catch (Exception e) {
                         throw new EventBusListenException(eventType, e.getMessage());
                     }

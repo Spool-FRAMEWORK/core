@@ -1,6 +1,7 @@
 package software.spool.core.model.vo;
 
 import software.spool.core.adapter.jackson.PayloadDeserializerFactory;
+import software.spool.core.exception.PartitionKeyException;
 
 import java.util.*;
 
@@ -21,7 +22,7 @@ public record PartitionKey(String value) {
             this.schema = schema;
         }
 
-        public PartitionKey from(final String payload) throws IllegalArgumentException {
+        public PartitionKey from(final String payload) throws PartitionKeyException {
             return new PartitionKey(validateAndBuild(payload));
         }
 
@@ -30,7 +31,7 @@ public record PartitionKey(String value) {
             List<String> resolved = schema.attributes().stream()
                     .map(a -> {
                         if (!entries.containsKey(a))
-                            throw new IllegalArgumentException("PartitionKeySchema does not match with payload");
+                            throw new PartitionKeyException(payload, schema, "PartitionKeySchema does not match with payload");
                         return a + "=" + entries.get(a);
                     })
                     .toList();

@@ -23,6 +23,11 @@ public final class PayloadDeserializerFactory {
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
+    @SuppressWarnings("unchecked")
+    public static <P> PayloadDeserializer<P> noOp() {
+        return payload -> (P) payload;
+    }
+
     public static StructuredDeserializerBuilder json() {
         return new StructuredDeserializerBuilder(JSON_MAPPER);
     }

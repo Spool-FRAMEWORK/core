@@ -11,9 +11,9 @@ import software.spool.core.exception.DeserializationException;
  * {@link PayloadDeserializerFactory}.
  * </p>
  *
- * @param <T> the deserialized output type
+ * @param <P> the deserialized output type
  */
-public interface PayloadDeserializer<T> {
+public interface PayloadDeserializer<P> {
     /**
      * Converts the given raw value into a typed intermediate object.
      *
@@ -22,5 +22,5 @@ public interface PayloadDeserializer<T> {
      * @return the deserialized representation; must not be {@code null}
      * @throws DeserializationException if the value cannot be parsed or converted
      */
-    T deserialize(String payload) throws DeserializationException;
+    P deserialize(String payload) throws DeserializationException;
 }

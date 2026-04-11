@@ -19,7 +19,7 @@ public record ModuleState(
     }
 
     public ModuleState seenNow() {
-        return ModuleState.of(identity);
+        return new ModuleState(identity, Instant.now(), status);
     }
 
     public ModuleState status(ModuleStatus status) {

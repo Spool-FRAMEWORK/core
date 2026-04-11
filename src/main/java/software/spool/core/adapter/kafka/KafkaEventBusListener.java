@@ -27,7 +27,7 @@ public class KafkaEventBusListener implements EventBusListener {
         String topic = event.getSimpleName();
         Properties props = new Properties();
         props.putAll(baseProps);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "spool." + topic + "." + UUID.randomUUID());
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "spool." + topic);
         try {
             KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(props);
             consumer.subscribe(List.of(topic));

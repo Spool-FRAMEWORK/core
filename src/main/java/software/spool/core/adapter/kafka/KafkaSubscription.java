@@ -46,7 +46,7 @@ public class KafkaSubscription<E extends Event> implements Subscription {
                         handler.handle(PayloadDeserializerFactory.json().as(eventType)
                                 .deserialize(new String(record.value(), StandardCharsets.UTF_8)));
                     } catch (Exception e) {
-                        throw new EventBusListenException(eventType, e.getMessage());
+                        System.err.println("Error while handling event " + eventType + ": " + e.getMessage());
                     }
                 }
             }

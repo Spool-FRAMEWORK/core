@@ -1,6 +1,8 @@
 package software.spool.core.utils.routing;
 
+import software.spool.core.adapter.logging.LoggerFactory;
 import software.spool.core.model.SpoolEvent;
+import software.spool.core.port.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +32,7 @@ import java.util.function.BiConsumer;
  * }</pre>
  */
 public class ErrorRouter {
-
-    /** Internal pairing of exception type and its associated handler. */
+    private static final Logger LOG = LoggerFactory.getLogger(ErrorRouter.class);
     private record Entry<E extends Exception>(Class<E> type, BiConsumer<E, SpoolEvent> handler) {
 
         boolean matches(Exception e) {
@@ -46,7 +47,7 @@ public class ErrorRouter {
                 try {
                     fallback.accept(handlerException, context);
                 } catch (Exception fallbackException) {
-                    System.err.println("[Spool] Fallback handler threw an exception: " + fallbackException);
+                    LOG.error("[Spool] Fallback handler threw an exception", fallbackException);
                 }
             }
         }
@@ -61,13 +62,13 @@ public class ErrorRouter {
      * default.
      */
     private BiConsumer<Exception, SpoolEvent> fallback = (e, cause) ->
-            System.err.println("[Spool] Unhandled error - context: " + cause + " | " + e);
+            LOG.error("[Spool] Unhandled error - context: " + cause + " | " + e);
 
     private void invokeFallback(Exception e, SpoolEvent context) {
         try {
             fallback.accept(e, context);
         } catch (Exception fallbackException) {
-            System.err.println("[Spool] Fallback handler threw an exception: " + fallbackException);
+            LOG.error("[Spool] Fallback handler threw an exception", fallbackException);
         }
     }
 
@@ -142,7 +143,7 @@ public class ErrorRouter {
                             try {
                                 fallback.accept(exception, context);
                             } catch (Exception fallbackException) {
-                                System.err.println("[Spool] Fallback handler threw an exception: " + fallbackException);
+                                LOG.error("[Spool] Fallback handler threw an exception", fallbackException);
                             }
                         }
                 );

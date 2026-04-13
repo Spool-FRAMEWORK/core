@@ -36,7 +36,8 @@ public record PartitionKey(String value) {
             LocalDate today = LocalDate.now(ZoneOffset.UTC);
             String datePrefix = "year=" + today.getYear()
                     + "::month=" + String.format("%02d", today.getMonthValue())
-                    + "::day=" + String.format("%02d", today.getDayOfMonth());
+                    + "::day=" + String.format("%02d", today.getDayOfMonth())
+                    + "::hour=" + String.format("%02d", today.atStartOfDay().getHour());
 
             List<String> resolved = schema.attributes().stream()
                     .map(a -> {
@@ -46,7 +47,7 @@ public record PartitionKey(String value) {
                     })
                     .toList();
 
-            String base = datePrefix + "::" + schema.sourceId();
+            String base = datePrefix + "::" + "source=" + schema.sourceId();
             if (schema.eventType() != Void.class) {
                 base += "::" + schema.eventType();
             }

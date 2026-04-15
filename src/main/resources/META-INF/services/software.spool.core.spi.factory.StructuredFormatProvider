@@ -1,0 +1,2 @@
+software.spool.core.adapter.jackson.JsonStructuredFormatProvider
+software.spool.core.adapter.jackson.YamlStructuredFormatProvider

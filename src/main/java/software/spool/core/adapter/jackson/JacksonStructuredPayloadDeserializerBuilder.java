@@ -2,28 +2,34 @@ package software.spool.core.adapter.jackson;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.*;
 import software.spool.core.exception.DeserializationException;
 import software.spool.core.port.serde.NamingConvention;
 import software.spool.core.port.serde.PayloadDeserializer;
+import software.spool.core.spi.factory.StructuredPayloadDeserializerBuilder;
 
 import java.util.List;
 import java.util.Map;
 
-import static software.spool.core.adapter.jackson.PayloadDeserializerFactory.toJacksonStrategy;
-
-public final class StructuredDeserializerBuilder {
+public final class JacksonStructuredPayloadDeserializerBuilder implements StructuredPayloadDeserializerBuilder {
     private final ObjectMapper mapper;
 
-    StructuredDeserializerBuilder(ObjectMapper mapper) {
+    JacksonStructuredPayloadDeserializerBuilder(ObjectMapper mapper) {
         this.mapper = mapper;
     }
 
-    public StructuredDeserializerBuilder convention(NamingConvention convention) {
-        return new StructuredDeserializerBuilder(mapper.copy()
+    public JacksonStructuredPayloadDeserializerBuilder convention(NamingConvention convention) {
+        return new JacksonStructuredPayloadDeserializerBuilder(mapper.copy()
                 .setPropertyNamingStrategy(toJacksonStrategy(convention)));
+    }
+
+    static PropertyNamingStrategy toJacksonStrategy(NamingConvention convention) {
+        return switch (convention) {
+            case CAMEL_CASE  -> PropertyNamingStrategies.LOWER_CAMEL_CASE;
+            case SNAKE_CASE  -> PropertyNamingStrategies.SNAKE_CASE;
+            case PASCAL_CASE -> PropertyNamingStrategies.UPPER_CAMEL_CASE;
+            case KEBAB_CASE  -> PropertyNamingStrategies.KEBAB_CASE;
+        };
     }
 
     public <D> PayloadDeserializer<D> as(Class<D> type) {

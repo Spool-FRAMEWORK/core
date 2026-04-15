@@ -1,11 +1,9 @@
 package software.spool.core.adapter.jackson;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import software.spool.core.exception.DeserializationException;
-import software.spool.core.port.serde.NamingConvention;
 import software.spool.core.port.serde.PayloadDeserializer;
+import software.spool.core.spi.SerdeRegistry;
+import software.spool.core.spi.factory.StructuredPayloadDeserializerBuilder;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -13,27 +11,17 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public final class PayloadDeserializerFactory {
-    private static final ObjectMapper JSON_MAPPER = buildMapper(new ObjectMapper());
-    private static final ObjectMapper YAML_MAPPER = buildMapper(new ObjectMapper(new YAMLFactory()));
-
-    private static ObjectMapper buildMapper(ObjectMapper mapper) {
-        return mapper
-                .registerModule(new JavaTimeModule())
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-    }
-
     @SuppressWarnings("unchecked")
     public static <P> PayloadDeserializer<P> noOp() {
         return payload -> (P) payload;
     }
 
-    public static StructuredDeserializerBuilder json() {
-        return new StructuredDeserializerBuilder(JSON_MAPPER);
+    public static StructuredPayloadDeserializerBuilder json() {
+        return SerdeRegistry.structured("JSON").builder();
     }
 
-    public static StructuredDeserializerBuilder yaml() {
-        return new StructuredDeserializerBuilder(YAML_MAPPER);
+    public static StructuredPayloadDeserializerBuilder yaml() {
+        return SerdeRegistry.structured("YAML").builder();
     }
 
     public static PayloadDeserializer<List<String>> textLines() {
@@ -66,15 +54,6 @@ public final class PayloadDeserializerFactory {
             } catch (Exception e) {
                 throw new DeserializationException(raw, e.getMessage());
             }
-        };
-    }
-
-    static PropertyNamingStrategy toJacksonStrategy(NamingConvention convention) {
-        return switch (convention) {
-            case CAMEL_CASE  -> PropertyNamingStrategies.LOWER_CAMEL_CASE;
-            case SNAKE_CASE  -> PropertyNamingStrategies.SNAKE_CASE;
-            case PASCAL_CASE -> PropertyNamingStrategies.UPPER_CAMEL_CASE;
-            case KEBAB_CASE  -> PropertyNamingStrategies.KEBAB_CASE;
         };
     }
 

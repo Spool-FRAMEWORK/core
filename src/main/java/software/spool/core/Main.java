@@ -9,7 +9,7 @@ public class Main {
                 .builder()
                 .asMap();
 
-        System.out.println(PayloadDeserializerFactory.json().asMap().deserialize("{\"name\":\"javi\"}"));
+        System.out.println(PayloadDeserializerFactory.json().asNode().deserialize("{\"name\":\"javi\"}"));
 
         System.out.println(deserializer.deserialize("{\"name\":\"javi\"}"));
     }

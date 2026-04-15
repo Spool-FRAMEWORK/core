@@ -4,6 +4,7 @@ import software.spool.core.adapter.jackson.PayloadDeserializerFactory;
 import software.spool.core.exception.PartitionKeyException;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
@@ -33,11 +34,11 @@ public record PartitionKey(String value) {
         private String validateAndBuild(String payload) {
             Map<String, Object> entries = PayloadDeserializerFactory.json().asMap().deserialize(payload);
 
-            LocalDate today = LocalDate.now(ZoneOffset.UTC);
-            String datePrefix = "year=" + today.getYear()
-                    + "::month=" + String.format("%02d", today.getMonthValue())
-                    + "::day=" + String.format("%02d", today.getDayOfMonth())
-                    + "::hour=" + String.format("%02d", today.atStartOfDay().getHour());
+            OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+            String datePrefix = "year=" + now.getYear()
+                    + "::month=" + String.format("%02d", now.getMonthValue())
+                    + "::day=" + String.format("%02d", now.getDayOfMonth())
+                    + "::hour=" + String.format("%02d", now.getHour());
 
             List<String> resolved = schema.attributes().stream()
                     .map(a -> {

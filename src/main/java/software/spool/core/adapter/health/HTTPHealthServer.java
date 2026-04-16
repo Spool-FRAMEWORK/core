@@ -4,7 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import software.spool.core.adapter.jackson.RecordSerializerFactory;
-import software.spool.core.port.health.HealthPayload;
+import software.spool.core.port.health.NodeHealthPayload;
 import software.spool.core.port.health.HealthServer;
 
 import java.io.IOException;
@@ -16,11 +16,11 @@ import java.util.function.Supplier;
 
 public class HTTPHealthServer implements HealthServer {
     private final int port;
-    private final Supplier<HealthPayload> payloadSupplier;
+    private final Supplier<NodeHealthPayload> payloadSupplier;
     private final HttpHandler handler;
     private HttpServer server;
 
-    public HTTPHealthServer(int port, Supplier<HealthPayload> payloadSupplier) {
+    public HTTPHealthServer(int port, Supplier<NodeHealthPayload> payloadSupplier) {
         this.port = port;
         this.payloadSupplier = payloadSupplier;
         this.handler = new TracedHttpHandler(this::handle);
@@ -47,7 +47,7 @@ public class HTTPHealthServer implements HealthServer {
             respond(exchange, 405, "{\"error\":\"Method Not Allowed\"}");
             return;
         }
-        HealthPayload payload = payloadSupplier.get();
+        NodeHealthPayload payload = payloadSupplier.get();
         respond(exchange, payload.status().httpCode(), RecordSerializerFactory.record().serialize(payload));
     }
 

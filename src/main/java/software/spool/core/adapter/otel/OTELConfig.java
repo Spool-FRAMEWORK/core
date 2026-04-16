@@ -44,18 +44,24 @@ public class OTELConfig {
                 ).build())
                 .build();
 
-        OpenTelemetrySdk sdk = OpenTelemetrySdk.builder()
-                .setTracerProvider(tracerProvider)
-                .setLoggerProvider(loggerProvider)
-                .buildAndRegisterGlobal();
+        try {
+            OpenTelemetrySdk sdk = OpenTelemetrySdk.builder()
+                    .setTracerProvider(tracerProvider)
+                    .setLoggerProvider(loggerProvider)
+                    .buildAndRegisterGlobal();
 
-        OpenTelemetryAppender.install(sdk);
+            OpenTelemetryAppender.install(sdk);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            sdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
-            sdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
-            sdk.close();
-        }, "otel-shutdown"));
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                sdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
+                sdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
+                sdk.close();
+            }, "otel-shutdown"));
+        } catch (IllegalStateException e) {
+            System.err.println("WARN: OpenTelemetry could not be registered globally (" + e.getMessage() + ").");
+            tracerProvider.close();
+            loggerProvider.close();
+        }
     }
 
     private static String resolveEnv(String key, String fallback) {

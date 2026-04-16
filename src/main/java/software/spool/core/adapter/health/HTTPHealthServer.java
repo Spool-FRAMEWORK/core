@@ -1,6 +1,7 @@
 package software.spool.core.adapter.health;
 
 import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import software.spool.core.adapter.jackson.RecordSerializerFactory;
 import software.spool.core.port.health.HealthPayload;
@@ -16,19 +17,21 @@ import java.util.function.Supplier;
 public class HTTPHealthServer implements HealthServer {
     private final int port;
     private final Supplier<HealthPayload> payloadSupplier;
+    private final HttpHandler handler;
     private HttpServer server;
 
     public HTTPHealthServer(int port, Supplier<HealthPayload> payloadSupplier) {
         this.port = port;
         this.payloadSupplier = payloadSupplier;
+        this.handler = new TracedHttpHandler(this::handle);
     }
 
     @Override
     public void start() throws IOException {
         server = HttpServer.create(new InetSocketAddress(port), 0);
-        server.createContext("/spool/health", this::handle);
-        server.createContext("/spool/health/live", this::handle);
-        server.createContext("/spool/health/ready", this::handle);
+        server.createContext("/spool/health", handler);
+        server.createContext("/spool/health/live", handler);
+        server.createContext("/spool/health/ready", handler);
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
         System.out.println("Health server started on port " + port);

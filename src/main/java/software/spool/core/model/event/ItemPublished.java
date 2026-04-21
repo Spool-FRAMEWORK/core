@@ -93,7 +93,7 @@ public record ItemPublished(
         }
 
         public Builder addMetadata(EventMetadata metadata) {
-            metadata.entrySet().forEach(entry -> metadata.set(entry.getKey(), entry.getValue()));
+            metadata.entrySet().forEach(entry -> this.metadata.set(entry.getKey(), entry.getValue()));
             return this;
         }
 

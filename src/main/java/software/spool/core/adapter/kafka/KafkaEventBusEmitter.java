@@ -10,6 +10,7 @@ import software.spool.core.exception.EventBusEmitException;
 import software.spool.core.model.Event;
 import software.spool.core.port.bus.EventBusEmitter;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 public class KafkaEventBusEmitter implements EventBusEmitter, AutoCloseable {
@@ -26,7 +27,6 @@ public class KafkaEventBusEmitter implements EventBusEmitter, AutoCloseable {
         try {
             byte[] payload = RecordSerializerFactory.record().serialize(event).getBytes();
             ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, payload);
-
             producer.send(record, (metadata, ex) -> {
                 if (ex != null)
                     throw new EventBusEmitException(event, "Failed to deliver event to topic " + topic, ex);

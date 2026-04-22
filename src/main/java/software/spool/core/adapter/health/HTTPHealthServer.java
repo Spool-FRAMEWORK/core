@@ -32,7 +32,11 @@ public class HTTPHealthServer implements HealthServer {
         server.createContext("/spool/health", handler);
         server.createContext("/spool/health/live", handler);
         server.createContext("/spool/health/ready", handler);
-        server.setExecutor(Executors.newCachedThreadPool());
+        server.setExecutor(Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r, "spool-health-http");
+            t.setDaemon(true);
+            return t;
+        }));
         server.start();
         System.out.println("Health server started on port " + port);
     }

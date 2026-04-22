@@ -1,11 +1,13 @@
 package software.spool.core.adapter.memory;
 
+import software.spool.core.exception.InboxReadException;
 import software.spool.core.model.*;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.vo.InboxItem;
 import software.spool.core.port.inbox.InboxReader;
 import software.spool.core.port.inbox.InboxUpdater;
 
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
@@ -41,5 +43,10 @@ public class InMemoryInbox implements InboxUpdater, InboxReader {
     public Stream<InboxItem> findByStatus(InboxItemStatus status) {
         return items.values().stream()
                 .filter(item -> item.status() == status);
+    }
+
+    @Override
+    public Optional<InboxItem> getBy(IdempotencyKey idempotencyKey) throws InboxReadException {
+        return items.containsKey(idempotencyKey) ? Optional.of(items.get(idempotencyKey)) : Optional.empty();
     }
 }

@@ -53,7 +53,6 @@ public class ErrorRouter {
         }
     }
 
-
     /** Ordered list of registered exception handlers. */
     private final List<Entry<?>> entries = new ArrayList<>();
 

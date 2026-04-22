@@ -26,7 +26,6 @@ public record ItemPublished(
         String causationId,
         IdempotencyKey idempotencyKey,
         PartitionKeySchema partitionKeySchema,
-        String payload,
         EventMetadata metadata) implements SpoolEvent {
 
     public ItemPublished {
@@ -34,7 +33,6 @@ public record ItemPublished(
         Objects.requireNonNull(timestamp, "timestamp is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
         Objects.requireNonNull(partitionKeySchema, "partitionKeySchema is required");
-        Objects.requireNonNull(payload, "payload is required");
     }
 
     public static Builder builder() {
@@ -46,7 +44,6 @@ public record ItemPublished(
         private String causationId;
         private IdempotencyKey idempotencyKey;
         private PartitionKeySchema partitionKeySchema;
-        private String payload;
         private final EventMetadata metadata = new EventMetadata();
 
         public Builder from(final SpoolEvent cause) {
@@ -82,11 +79,6 @@ public record ItemPublished(
             return this;
         }
 
-        public Builder payload(final String payload) {
-            this.payload = payload;
-            return this;
-        }
-
         public Builder addMetadata(EventMetadataKey metadataKey, String value) {
             metadata.set(metadataKey, value);
             return this;
@@ -105,7 +97,6 @@ public record ItemPublished(
                     causationId,
                     idempotencyKey,
                     partitionKeySchema,
-                    payload,
                     metadata);
         }
     }

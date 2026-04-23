@@ -38,7 +38,16 @@ public class HTTPHealthServer implements HealthServer {
             t.setDaemon(true);
             return t;
         }));
-        server.start();
+
+        Thread starter = new Thread(() -> server.start(), "spool-health-starter");
+        starter.setDaemon(true);
+        starter.start();
+        try {
+            starter.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
         LoggerFactory.getLogger(HealthServer.class).info("Health server started on port " + port);
     }
 

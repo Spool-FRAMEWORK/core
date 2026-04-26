@@ -2,22 +2,12 @@ package software.spool.core.port.bus;
 
 import software.spool.core.exception.EventBusListenException;
 import software.spool.core.model.Event;
-import software.spool.core.port.decorator.SafeEventSubscriber;
 
-/**
- * Input port for subscribing to events on the event bus.
- *
- * @see SafeEventSubscriber
- */
+@FunctionalInterface
 public interface EventSubscriber {
-    /**
-     * Registers a handler for the given event type.
-     *
-     * @param <E>     the event type
-     * @param event   the class of the event to subscribe to
-     * @param handler the handler invoked when a matching event is emitted
-     * @return a {@link Subscription} that can be cancelled to unsubscribe
-     * @throws EventBusListenException if the subscription fails
-     */
-    <E extends Event> Subscription on(Class<E> event, Handler<E> handler) throws EventBusListenException;
+    <E extends Event> Subscription subscribe(
+            Destination destination,
+            Class<E> eventType,
+            Handler<E> handler
+    ) throws EventBusListenException;
 }

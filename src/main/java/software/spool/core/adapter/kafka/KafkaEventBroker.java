@@ -20,7 +20,7 @@ public class KafkaEventBroker implements EventBroker {
     }
 
     @Override
-    public <E extends Event> Subscription subscribe(Destination destination, Class<E> eventType, Handler<E> handler) throws EventBrokerListenException {
+    public <E extends Event> Subscription subscribe(Destination destination, Class<E> eventType, Handler<BrokerMessage<E>> handler) throws EventBrokerListenException {
         return subscriber.subscribe(destination, eventType, handler);
     }
 }

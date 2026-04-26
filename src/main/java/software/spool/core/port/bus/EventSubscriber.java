@@ -8,6 +8,6 @@ public interface EventSubscriber {
     <E extends Event> Subscription subscribe(
             Destination destination,
             Class<E> eventType,
-            Handler<E> handler
+            Handler<BrokerMessage<E>> handler
     ) throws EventBrokerListenException;
 }

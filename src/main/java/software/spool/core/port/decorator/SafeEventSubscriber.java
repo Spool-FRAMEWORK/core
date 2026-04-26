@@ -4,21 +4,21 @@ import software.spool.core.port.bus.Handler;
 import software.spool.core.exception.EventBusListenException;
 import software.spool.core.exception.SpoolException;
 import software.spool.core.model.Event;
-import software.spool.core.port.bus.EventBusListener;
+import software.spool.core.port.bus.EventSubscriber;
 import software.spool.core.port.bus.Subscription;
 
 /**
- * Decorator that wraps an {@link EventBusListener} and normalises any
+ * Decorator that wraps an {@link EventSubscriber} and normalises any
  * unchecked exception into an {@link EventBusListenException}.
  *
  * <p>
  * Exceptions that are already a {@link SpoolException} are rethrown as-is.
  * </p>
  */
-public class SafeEventBusListener implements EventBusListener {
-    private final EventBusListener listener;
+public class SafeEventSubscriber implements EventSubscriber {
+    private final EventSubscriber listener;
 
-    public SafeEventBusListener(EventBusListener listener) {
+    public SafeEventSubscriber(EventSubscriber listener) {
         this.listener = listener;
     }
 
@@ -33,7 +33,7 @@ public class SafeEventBusListener implements EventBusListener {
         }
     }
 
-    public static SafeEventBusListener of(EventBusListener listener) {
-        return new SafeEventBusListener(listener);
+    public static SafeEventSubscriber of(EventSubscriber listener) {
+        return new SafeEventSubscriber(listener);
     }
 }

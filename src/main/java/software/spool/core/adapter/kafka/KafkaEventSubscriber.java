@@ -6,18 +6,17 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import software.spool.core.exception.EventBusListenException;
 import software.spool.core.model.Event;
-import software.spool.core.port.bus.EventBusListener;
+import software.spool.core.port.bus.EventSubscriber;
 import software.spool.core.port.bus.Handler;
 import software.spool.core.port.bus.Subscription;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.UUID;
 
-public class KafkaEventBusListener implements EventBusListener {
+public class KafkaEventSubscriber implements EventSubscriber {
     private final Properties   baseProps;
 
-    public KafkaEventBusListener(KafkaEventBusConfig config) {
+    public KafkaEventSubscriber(KafkaEventBusConfig config) {
         this.baseProps = buildBaseProps(config);
     }
 

@@ -2,13 +2,14 @@ package software.spool.core.port.bus;
 
 import software.spool.core.exception.EventBusEmitException;
 import software.spool.core.model.Event;
+import software.spool.core.port.decorator.SafeEventPublisher;
 
 /**
  * Output port for publishing events to the event bus.
  *
- * @see software.spool.core.port.decorator.SafeEventBusEmitter
+ * @see SafeEventPublisher
  */
-public interface EventBusEmitter {
+public interface EventPublisher {
     /**
      * Emits the given event to all registered handlers.
      *

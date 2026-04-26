@@ -1,7 +1,7 @@
 package software.spool.core.port.bus;
 
 /**
- * Handle returned after subscribing to events on an {@link EventBusListener}.
+ * Handle returned after subscribing to events on an {@link EventSubscriber}.
  *
  * <p>
  * Call {@link #cancel()} to unsubscribe. The {@link #NULL} constant

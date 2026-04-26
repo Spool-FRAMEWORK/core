@@ -8,15 +8,14 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import software.spool.core.adapter.jackson.RecordSerializerFactory;
 import software.spool.core.exception.EventBusEmitException;
 import software.spool.core.model.Event;
-import software.spool.core.port.bus.EventBusEmitter;
+import software.spool.core.port.bus.EventPublisher;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
-public class KafkaEventBusEmitter implements EventBusEmitter, AutoCloseable {
+public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
     private final KafkaProducer<String, byte[]> producer;
 
-    public KafkaEventBusEmitter(KafkaEventBusConfig config) {
+    public KafkaEventPublisher(KafkaEventBusConfig config) {
         this.producer = new KafkaProducer<>(buildProducerProps(config));
     }
 

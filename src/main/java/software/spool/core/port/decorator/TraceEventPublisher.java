@@ -1,25 +1,21 @@
 package software.spool.core.port.decorator;
 
-import software.spool.core.port.bus.EventBusEmitter;
-import software.spool.core.port.bus.Handler;
+import software.spool.core.port.bus.EventPublisher;
 import software.spool.core.exception.EventBusEmitException;
-import software.spool.core.exception.EventBusListenException;
 import software.spool.core.model.Event;
-import software.spool.core.port.bus.EventBus;
 import software.spool.core.port.tracing.TracedEventBus;
-import software.spool.core.port.bus.Subscription;
 import software.spool.core.port.tracing.TraceScope;
 
-public class TraceEventBusEmitter implements EventBusEmitter {
-    private final EventBusEmitter bus;
+public class TraceEventPublisher implements EventPublisher {
+    private final EventPublisher bus;
     private final TracedEventBus tracer;
 
-    public TraceEventBusEmitter(EventBusEmitter bus, TracedEventBus tracer) {
+    public TraceEventPublisher(EventPublisher bus, TracedEventBus tracer) {
         this.bus = bus;
         this.tracer = tracer;
     }
 
-    public static Builder of(EventBusEmitter bus) {
+    public static Builder of(EventPublisher bus) {
         return new Builder(bus);
     }
 
@@ -37,14 +33,14 @@ public class TraceEventBusEmitter implements EventBusEmitter {
     }
 
     public static class Builder {
-        private final EventBusEmitter bus;
+        private final EventPublisher bus;
 
-        public Builder(EventBusEmitter bus) {
+        public Builder(EventPublisher bus) {
             this.bus = bus;
         }
 
-        public EventBusEmitter with(TracedEventBus tracer) {
-            return new TraceEventBusEmitter(bus, tracer);
+        public EventPublisher with(TracedEventBus tracer) {
+            return new TraceEventPublisher(bus, tracer);
         }
     }
 }

@@ -3,20 +3,20 @@ package software.spool.core.port.decorator;
 import software.spool.core.exception.EventBusEmitException;
 import software.spool.core.exception.SpoolException;
 import software.spool.core.model.Event;
-import software.spool.core.port.bus.EventBusEmitter;
+import software.spool.core.port.bus.EventPublisher;
 
 /**
- * Decorator that wraps an {@link EventBusEmitter} and normalises any
+ * Decorator that wraps an {@link EventPublisher} and normalises any
  * unchecked exception into an {@link EventBusEmitException}.
  *
  * <p>
  * Exceptions that are already a {@link SpoolException} are rethrown as-is.
  * </p>
  */
-public class SafeEventBusEmitter implements EventBusEmitter {
-    private final EventBusEmitter emitter;
+public class SafeEventPublisher implements EventPublisher {
+    private final EventPublisher emitter;
 
-    public SafeEventBusEmitter(EventBusEmitter emitter) {
+    public SafeEventPublisher(EventPublisher emitter) {
         this.emitter = emitter;
     }
 
@@ -31,7 +31,7 @@ public class SafeEventBusEmitter implements EventBusEmitter {
         }
     }
 
-    public static SafeEventBusEmitter of(EventBusEmitter emitter) {
-        return new SafeEventBusEmitter(emitter);
+    public static SafeEventPublisher of(EventPublisher emitter) {
+        return new SafeEventPublisher(emitter);
     }
 }

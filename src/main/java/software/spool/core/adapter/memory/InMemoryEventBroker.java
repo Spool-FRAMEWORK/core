@@ -4,7 +4,7 @@ import software.spool.core.port.bus.Handler;
 import software.spool.core.exception.EventBusEmitException;
 import software.spool.core.exception.EventBusListenException;
 import software.spool.core.model.Event;
-import software.spool.core.port.bus.EventBus;
+import software.spool.core.port.bus.EventBroker;
 import software.spool.core.port.bus.Subscription;
 
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Thread-safe in-memory {@link EventBus} implementation for local
+ * Thread-safe in-memory {@link EventBroker} implementation for local
  * testing and single-process deployments.
  *
  * <p>
@@ -20,7 +20,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * dispatched synchronously on the calling thread.
  * </p>
  */
-public class InMemoryEventBus implements EventBus {
+public class InMemoryEventBroker implements EventBroker {
     private final ConcurrentHashMap<Class<?>, CopyOnWriteArrayList<Handler<?>>> registry = new ConcurrentHashMap<>();
 
     @Override

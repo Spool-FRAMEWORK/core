@@ -5,11 +5,11 @@ import software.spool.core.exception.EventBusListenException;
 import software.spool.core.model.Event;
 import software.spool.core.port.bus.*;
 
-public class KafkaEventBus implements EventBus {
-    private final EventBusEmitter emitter;
-    private final EventBusListener listener;
+public class KafkaEventBroker implements EventBroker {
+    private final EventPublisher emitter;
+    private final EventSubscriber listener;
 
-    public KafkaEventBus(EventBusEmitter emitter, EventBusListener listener) {
+    public KafkaEventBroker(EventPublisher emitter, EventSubscriber listener) {
         this.emitter = emitter;
         this.listener = listener;
     }

@@ -2,13 +2,14 @@ package software.spool.core.port.bus;
 
 import software.spool.core.exception.EventBusListenException;
 import software.spool.core.model.Event;
+import software.spool.core.port.decorator.SafeEventSubscriber;
 
 /**
  * Input port for subscribing to events on the event bus.
  *
- * @see software.spool.core.port.decorator.SafeEventBusListener
+ * @see SafeEventSubscriber
  */
-public interface EventBusListener {
+public interface EventSubscriber {
     /**
      * Registers a handler for the given event type.
      *

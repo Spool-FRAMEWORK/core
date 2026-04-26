@@ -27,13 +27,13 @@ public class InMemoryInbox implements InboxUpdater, InboxEnvelopeResolver, Inbox
     private final ConcurrentHashMap<IdempotencyKey, Envelope> envelopes = new ConcurrentHashMap<>();
 
     @Override
-    public Optional<Envelope> findById(IdempotencyKey key) throws InboxReadException {
-        return Optional.ofNullable(envelopes.get(key));
+    public Optional<Envelope> findById(IdempotencyKey idempotencyKey) throws InboxReadException {
+        return Optional.ofNullable(envelopes.get(idempotencyKey));
     }
 
     @Override
-    public Collection<Envelope> findByIds(Collection<IdempotencyKey> keys) throws InboxReadException {
-        return keys.stream().map(this::findById).filter(Optional::isPresent).map(Optional::get).toList();
+    public Collection<Envelope> findByIds(Collection<IdempotencyKey> idempotencyKeys) throws InboxReadException {
+        return idempotencyKeys.stream().map(this::findById).filter(Optional::isPresent).map(Optional::get).toList();
     }
 
     @Override

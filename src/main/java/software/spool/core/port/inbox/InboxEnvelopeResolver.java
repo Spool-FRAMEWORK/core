@@ -8,6 +8,6 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface InboxEnvelopeResolver {
-    Optional<Envelope> findById(IdempotencyKey key) throws InboxReadException;
-    Collection<Envelope> findByIds(Collection<IdempotencyKey> keys) throws InboxReadException;
+    Optional<Envelope> findById(IdempotencyKey idempotencyKey) throws InboxReadException;
+    Collection<Envelope> findByIds(Collection<IdempotencyKey> idempotencyKeys) throws InboxReadException;
 }

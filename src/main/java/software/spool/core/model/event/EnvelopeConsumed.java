@@ -12,14 +12,12 @@ public record EnvelopeConsumed(
         Instant timestamp,
         String correlationId,
         String causationId,
-        IdempotencyKey idempotencyKey,
-        String moduleId) implements SpoolEvent {
+        IdempotencyKey idempotencyKey) implements SpoolEvent {
 
     public EnvelopeConsumed {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
-        Objects.requireNonNull(moduleId, "idempotencyKey is required");
     }
 
     public static Builder builder() {
@@ -60,19 +58,13 @@ public record EnvelopeConsumed(
             return this;
         }
 
-        public Builder moduleId(final String moduleId) {
-            this.moduleId = moduleId;
-            return this;
-        }
-
         public EnvelopeConsumed build() {
             return new EnvelopeConsumed(
                     UUID.randomUUID().toString(),
                     Instant.now(),
                     correlationId,
                     causationId,
-                    idempotencyKey,
-                    moduleId);
+                    idempotencyKey);
         }
     }
 }

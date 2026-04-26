@@ -5,14 +5,12 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
 import software.spool.core.adapter.jackson.PayloadDeserializerFactory;
-import software.spool.core.exception.EventBusListenException;
 import software.spool.core.model.Event;
 import software.spool.core.port.bus.Handler;
 import software.spool.core.port.bus.Subscription;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Arrays;
 
 public class KafkaSubscription<E extends Event> implements Subscription {
     private final KafkaConsumer<String, byte[]> consumer;

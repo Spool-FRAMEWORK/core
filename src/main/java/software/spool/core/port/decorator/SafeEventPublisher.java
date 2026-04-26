@@ -1,13 +1,13 @@
 package software.spool.core.port.decorator;
 
-import software.spool.core.exception.EventBusEmitException;
+import software.spool.core.exception.EventBrokerEmitException;
 import software.spool.core.exception.SpoolException;
 import software.spool.core.model.Event;
 import software.spool.core.port.bus.EventPublisher;
 
 /**
  * Decorator that wraps an {@link EventPublisher} and normalises any
- * unchecked exception into an {@link EventBusEmitException}.
+ * unchecked exception into an {@link EventBrokerEmitException}.
  *
  * <p>
  * Exceptions that are already a {@link SpoolException} are rethrown as-is.
@@ -27,7 +27,7 @@ public class SafeEventPublisher implements EventPublisher {
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {
-            throw new EventBusEmitException(event, e.getMessage(), e);
+            throw new EventBrokerEmitException(event, e.getMessage(), e);
         }
     }
 

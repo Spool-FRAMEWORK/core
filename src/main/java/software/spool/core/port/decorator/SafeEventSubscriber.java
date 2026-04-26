@@ -1,7 +1,7 @@
 package software.spool.core.port.decorator;
 
 import software.spool.core.port.bus.Handler;
-import software.spool.core.exception.EventBusListenException;
+import software.spool.core.exception.EventBrokerListenException;
 import software.spool.core.exception.SpoolException;
 import software.spool.core.model.Event;
 import software.spool.core.port.bus.EventSubscriber;
@@ -9,7 +9,7 @@ import software.spool.core.port.bus.Subscription;
 
 /**
  * Decorator that wraps an {@link EventSubscriber} and normalises any
- * unchecked exception into an {@link EventBusListenException}.
+ * unchecked exception into an {@link EventBrokerListenException}.
  *
  * <p>
  * Exceptions that are already a {@link SpoolException} are rethrown as-is.
@@ -29,7 +29,7 @@ public class SafeEventSubscriber implements EventSubscriber {
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {
-            throw new EventBusListenException(event, e.getMessage(), e);
+            throw new EventBrokerListenException(event, e.getMessage(), e);
         }
     }
 

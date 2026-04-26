@@ -1,8 +1,8 @@
 package software.spool.core.adapter.memory;
 
 import software.spool.core.port.bus.Handler;
-import software.spool.core.exception.EventBusEmitException;
-import software.spool.core.exception.EventBusListenException;
+import software.spool.core.exception.EventBrokerEmitException;
+import software.spool.core.exception.EventBrokerListenException;
 import software.spool.core.model.Event;
 import software.spool.core.port.bus.EventBroker;
 import software.spool.core.port.bus.Subscription;
@@ -24,7 +24,7 @@ public class InMemoryEventBroker implements EventBroker {
     private final ConcurrentHashMap<Class<?>, CopyOnWriteArrayList<Handler<?>>> registry = new ConcurrentHashMap<>();
 
     @Override
-    public <E extends Event> Subscription on(Class<E> event, Handler<E> handler) throws EventBusListenException {
+    public <E extends Event> Subscription on(Class<E> event, Handler<E> handler) throws EventBrokerListenException {
         registry.computeIfAbsent(event, k -> new CopyOnWriteArrayList<>())
                 .add(handler);
 
@@ -34,7 +34,7 @@ public class InMemoryEventBroker implements EventBroker {
 
     @Override
     @SuppressWarnings("unchecked")
-    public void publish(Event event) throws EventBusEmitException {
+    public void publish(Event event) throws EventBrokerEmitException {
         try {
             List<Handler<?>> handlers = registry.getOrDefault(
                     event.getClass(),
@@ -42,7 +42,7 @@ public class InMemoryEventBroker implements EventBroker {
             for (Handler<?> handler : handlers)
                 ((Handler<Event>) handler).handle(event);
         } catch (Exception e) {
-            throw new EventBusEmitException(event, e.getMessage(), e);
+            throw new EventBrokerEmitException(event, e.getMessage(), e);
         }
     }
 }

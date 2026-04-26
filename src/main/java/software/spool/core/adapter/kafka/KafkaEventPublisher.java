@@ -6,7 +6,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import software.spool.core.adapter.jackson.RecordSerializerFactory;
-import software.spool.core.exception.EventBusEmitException;
+import software.spool.core.exception.EventBrokerEmitException;
 import software.spool.core.model.Event;
 import software.spool.core.port.bus.EventPublisher;
 
@@ -20,7 +20,7 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
     }
 
     @Override
-    public void publish(Event event) throws EventBusEmitException {
+    public void publish(Event event) throws EventBrokerEmitException {
         String topic = event.getClass().getSimpleName();
 
         try {
@@ -28,10 +28,10 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
             ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, payload);
             producer.send(record, (metadata, ex) -> {
                 if (ex != null)
-                    throw new EventBusEmitException(event, "Failed to deliver event to topic " + topic, ex);
+                    throw new EventBrokerEmitException(event, "Failed to deliver event to topic " + topic, ex);
             });
         } catch (Exception e) {
-            throw new EventBusEmitException(event, "Failed to emit event [" + topic + "] to Kafka", e);
+            throw new EventBrokerEmitException(event, "Failed to emit event [" + topic + "] to Kafka", e);
         }
     }
 

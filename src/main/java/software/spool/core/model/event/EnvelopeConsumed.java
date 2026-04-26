@@ -28,7 +28,6 @@ public record EnvelopeConsumed(
         private String correlationId;
         private String causationId;
         private IdempotencyKey idempotencyKey;
-        private String moduleId;
 
         public Builder from(final SpoolEvent cause) {
             this.correlationId = cause.correlationId();

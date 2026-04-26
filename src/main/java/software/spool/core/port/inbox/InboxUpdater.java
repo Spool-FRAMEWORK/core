@@ -3,7 +3,6 @@ package software.spool.core.port.inbox;
 import software.spool.core.exception.InboxUpdateException;
 import software.spool.core.model.EnvelopeStatus;
 import software.spool.core.model.vo.IdempotencyKey;
-import software.spool.core.model.vo.InboxItem;
 
 /**
  * Output port for updating the status of inbox items.

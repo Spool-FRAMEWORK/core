@@ -2,7 +2,6 @@ package software.spool.core.port.inbox;
 
 import software.spool.core.exception.InboxReadException;
 import software.spool.core.model.vo.IdempotencyKey;
-import software.spool.core.model.vo.InboxItem;
 import software.spool.core.model.EnvelopeStatus;
 
 import java.util.Optional;

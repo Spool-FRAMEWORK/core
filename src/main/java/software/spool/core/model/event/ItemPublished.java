@@ -52,7 +52,7 @@ public record ItemPublished(
             return this;
         }
 
-        public Builder from(final InboxItemStored cause) {
+        public Builder from(final EnvelopeStored cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
             this.idempotencyKey = cause.idempotencyKey();

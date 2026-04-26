@@ -1,8 +1,7 @@
 package software.spool.core.model.failure;
 
-import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.SpoolEvent;
-import software.spool.core.model.event.SourceItemCaptured;
+import software.spool.core.model.event.SourcePayloadCaptured;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -43,7 +42,7 @@ public record DataLakePersistFailed(
             return this;
         }
 
-        public Builder from(final SourceItemCaptured cause) {
+        public Builder from(final SourcePayloadCaptured cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
             return this;

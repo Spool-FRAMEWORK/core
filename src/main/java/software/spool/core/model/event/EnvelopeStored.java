@@ -15,14 +15,14 @@ import java.util.UUID;
  * begin the publishing flow.
  * </p>
  */
-public record InboxItemStored(
+public record EnvelopeStored(
         String eventId,
         Instant timestamp,
         String correlationId,
         String causationId,
         IdempotencyKey idempotencyKey) implements SpoolEvent {
 
-    public InboxItemStored {
+    public EnvelopeStored {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
@@ -43,7 +43,7 @@ public record InboxItemStored(
             return this;
         }
 
-        public Builder from(final SourceItemCaptured cause) {
+        public Builder from(final SourcePayloadCaptured cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
             this.idempotencyKey = cause.idempotencyKey();
@@ -65,8 +65,8 @@ public record InboxItemStored(
             return this;
         }
 
-        public InboxItemStored build() {
-            return new InboxItemStored(
+        public EnvelopeStored build() {
+            return new EnvelopeStored(
                     UUID.randomUUID().toString(),
                     Instant.now(),
                     correlationId,

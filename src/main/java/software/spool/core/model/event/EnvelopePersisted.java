@@ -1,86 +1,82 @@
-package software.spool.core.model.failure;
+package software.spool.core.model.event;
 
 import software.spool.core.model.vo.IdempotencyKey;
+import software.spool.core.model.vo.PartitionKey;
 import software.spool.core.model.SpoolEvent;
-import software.spool.core.model.event.EnvelopeStored;
 
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Emitted when publishing an inbox item to the event bus fails.
- *
- * <p>
- * Carries the {@link #errorMessage()} describing the root cause.
- * </p>
+ * Emitted when an item has been successfully persisted to the data lake by the
+ * Ingester.
  */
-public record ItemPublishFailed(
+public record EnvelopePersisted(
         String eventId,
-        Instant timestamp,
-        String correlationId,
         String causationId,
+        String correlationId,
+        Instant timestamp,
         IdempotencyKey idempotencyKey,
-        String errorMessage) implements SpoolEvent {
-
-    public ItemPublishFailed {
+        PartitionKey partitionKey) implements SpoolEvent {
+    public EnvelopePersisted {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
-        Objects.requireNonNull(errorMessage, "errorMessage is required");
+        Objects.requireNonNull(partitionKey, "partitionKey is required");
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static EnvelopePersisted.Builder builder() {
+        return new EnvelopePersisted.Builder();
     }
 
     public static class Builder {
         private String correlationId;
         private String causationId;
         private IdempotencyKey idempotencyKey;
-        private String errorMessage;
+        private PartitionKey partitionKey;
 
-        public Builder from(final SpoolEvent cause) {
+        public EnvelopePersisted.Builder from(final SpoolEvent cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
             return this;
         }
 
-        public Builder from(final EnvelopeStored cause) {
+        public EnvelopePersisted.Builder from(final ItemPublished cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
             this.idempotencyKey = cause.idempotencyKey();
             return this;
         }
 
-        public Builder correlationId(final String correlationId) {
+        public EnvelopePersisted.Builder correlationId(final String correlationId) {
             this.correlationId = correlationId;
             return this;
         }
 
-        public Builder causationId(final String causationId) {
+        public EnvelopePersisted.Builder causationId(final String causationId) {
             this.causationId = causationId;
             return this;
         }
 
-        public Builder idempotencyKey(final IdempotencyKey idempotencyKey) {
+        public EnvelopePersisted.Builder idempotencyKey(final IdempotencyKey idempotencyKey) {
             this.idempotencyKey = idempotencyKey;
             return this;
         }
 
-        public Builder errorMessage(final String errorMessage) {
-            this.errorMessage = errorMessage;
+        public EnvelopePersisted.Builder partitionKey(final PartitionKey partitionKey) {
+            this.partitionKey = partitionKey;
             return this;
         }
 
-        public ItemPublishFailed build() {
-            return new ItemPublishFailed(
+        public EnvelopePersisted build() {
+            return new EnvelopePersisted(
                     UUID.randomUUID().toString(),
-                    Instant.now(),
-                    correlationId,
                     causationId,
+                    correlationId,
+                    Instant.now(),
                     idempotencyKey,
-                    errorMessage);
+                    partitionKey);
         }
     }
 }

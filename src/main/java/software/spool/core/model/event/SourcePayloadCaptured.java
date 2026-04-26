@@ -8,16 +8,17 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Emitted when an inbox item has been successfully consumed by the Ingester.
+ * Emitted when the Crawler successfully captures and serializes a single
+ * record from the source.
  */
-public record InboxItemConsumed(
+public record SourcePayloadCaptured(
         String eventId,
         Instant timestamp,
         String correlationId,
         String causationId,
         IdempotencyKey idempotencyKey) implements SpoolEvent {
 
-    public InboxItemConsumed {
+    public SourcePayloadCaptured {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
@@ -38,13 +39,6 @@ public record InboxItemConsumed(
             return this;
         }
 
-        public Builder from(final ItemPublished cause) {
-            this.correlationId = cause.correlationId();
-            this.causationId = cause.eventId();
-            this.idempotencyKey = cause.idempotencyKey();
-            return this;
-        }
-
         public Builder correlationId(final String correlationId) {
             this.correlationId = correlationId;
             return this;
@@ -60,8 +54,8 @@ public record InboxItemConsumed(
             return this;
         }
 
-        public InboxItemConsumed build() {
-            return new InboxItemConsumed(
+        public SourcePayloadCaptured build() {
+            return new SourcePayloadCaptured(
                     UUID.randomUUID().toString(),
                     Instant.now(),
                     correlationId,

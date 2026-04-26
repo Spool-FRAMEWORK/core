@@ -1,10 +1,15 @@
 package software.spool.core.adapter.memory;
 
 import software.spool.core.exception.InboxReadException;
+import software.spool.core.exception.InboxUpdateException;
 import software.spool.core.model.*;
+import software.spool.core.model.vo.Envelope;
 import software.spool.core.model.vo.IdempotencyKey;
+import software.spool.core.port.inbox.InboxEnvelopeResolver;
+import software.spool.core.port.inbox.InboxStatusQuery;
 import software.spool.core.port.inbox.InboxUpdater;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -18,33 +23,26 @@ import java.util.stream.Stream;
  * publisher and ingester builders when no custom implementation is provided.
  * </p>
  */
-public class InMemoryInbox implements InboxUpdater, InboxReader {
-    private final ConcurrentHashMap<IdempotencyKey, InboxItem> items = new ConcurrentHashMap<>();
+public class InMemoryInbox implements InboxUpdater, InboxEnvelopeResolver, InboxStatusQuery {
+    private final ConcurrentHashMap<IdempotencyKey, Envelope> envelopes = new ConcurrentHashMap<>();
 
     @Override
-    public InboxItem update(IdempotencyKey idempotencyKey, EnvelopeStatus status) {
-        InboxItem existing = items.get(idempotencyKey);
-        if (existing == null)
-            return null;
-        InboxItem updated = existing.withStatus(status);
-        items.put(idempotencyKey, updated);
-        return updated;
-    }
-
-    /**
-     * Returns all items matching the given status.
-     *
-     * @param status the status to filter by
-     * @return a stream of matching inbox items
-     */
-    @Override
-    public Stream<InboxItem> findByStatus(EnvelopeStatus status) {
-        return items.values().stream()
-                .filter(item -> item.status() == status);
+    public Optional<Envelope> findById(IdempotencyKey key) throws InboxReadException {
+        return Optional.ofNullable(envelopes.get(key));
     }
 
     @Override
-    public Optional<InboxItem> getBy(IdempotencyKey idempotencyKey) throws InboxReadException {
-        return items.containsKey(idempotencyKey) ? Optional.of(items.get(idempotencyKey)) : Optional.empty();
+    public Collection<Envelope> findByIds(Collection<IdempotencyKey> keys) throws InboxReadException {
+        return keys.stream().map(this::findById).filter(Optional::isPresent).map(Optional::get).toList();
+    }
+
+    @Override
+    public Collection<Envelope> findByStatus(EnvelopeStatus status) throws InboxReadException {
+        return this.envelopes.values().stream().filter(e -> e.status().equals(status)).toList();
+    }
+
+    @Override
+    public Envelope update(IdempotencyKey idempotencyKey, EnvelopeStatus status) throws InboxUpdateException {
+        return this.envelopes.put(idempotencyKey, this.envelopes.get(idempotencyKey).withStatus(status));
     }
 }

@@ -7,9 +7,13 @@ import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import software.spool.core.adapter.jackson.RecordSerializerFactory;
 import software.spool.core.exception.EventBrokerEmitException;
+import software.spool.core.exception.EventBusEmitException;
 import software.spool.core.model.Event;
+import software.spool.core.port.bus.BrokerMessage;
+import software.spool.core.port.bus.Destination;
 import software.spool.core.port.bus.EventPublisher;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
@@ -20,25 +24,33 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
     }
 
     @Override
-    public void publish(Event event) throws EventBrokerEmitException {
-        String topic = event.getClass().getSimpleName();
-
+    public <E extends Event> void publish(Destination destination, BrokerMessage<E> message) throws EventBrokerEmitException {
         try {
-            byte[] payload = RecordSerializerFactory.record().serialize(event).getBytes();
-            ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, payload);
+            byte[] payload = RecordSerializerFactory.record()
+                    .serialize(message.payload())
+                    .getBytes(StandardCharsets.UTF_8);
+
+            ProducerRecord<String, byte[]> record =
+                    new ProducerRecord<>(destination.value(), message.key(), payload);
+
             producer.send(record, (metadata, ex) -> {
-                if (ex != null)
-                    throw new EventBrokerEmitException(event, "Failed to deliver event to topic " + topic, ex);
+                if (ex != null) {
+                    throw new EventBrokerEmitException(
+                            message.payload(),
+                            "Failed to deliver message to destination " + destination.value(),
+                            ex
+                    );
+                }
             });
         } catch (Exception e) {
-            throw new EventBrokerEmitException(event, "Failed to emit event [" + topic + "] to Kafka", e);
+            throw new EventBrokerEmitException(
+                    message.payload(),
+                    "Failed to emit message to Kafka destination [" + destination.value() + "]",
+                    e
+            );
         }
     }
 
-    /**
-     * Flush + espera a que todos los mensajes en buffer lleguen al broker.
-     * Útil antes de un shutdown controlado.
-     */
     public void flush() {
         producer.flush();
     }
@@ -50,24 +62,15 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
 
     private static Properties buildProducerProps(KafkaEventBusConfig config) {
         Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,      config.bootstrapServers());
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,   StringSerializer.class.getName());
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.bootstrapServers());
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
-
-        // Garantía de entrega: espera ACK del líder + réplicas in-sync
-        props.put(ProducerConfig.ACKS_CONFIG,                   "all");
-
-        // Reintentos automáticos ante fallos transitorios (red, líder nuevo, etc.)
-        props.put(ProducerConfig.RETRIES_CONFIG,                3);
-        props.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG,       200);
-
-        // Idempotencia: evita duplicados si un retry llega dos veces al broker
-        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG,     true);
-
-        // Batching para mayor throughput (ajusta según latencia aceptable)
-        props.put(ProducerConfig.LINGER_MS_CONFIG,              5);
-        props.put(ProducerConfig.BATCH_SIZE_CONFIG,             16_384);
-
+        props.put(ProducerConfig.ACKS_CONFIG, "all");
+        props.put(ProducerConfig.RETRIES_CONFIG, 3);
+        props.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, 200);
+        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+        props.put(ProducerConfig.LINGER_MS_CONFIG, 5);
+        props.put(ProducerConfig.BATCH_SIZE_CONFIG, 16_384);
         return props;
     }
 }

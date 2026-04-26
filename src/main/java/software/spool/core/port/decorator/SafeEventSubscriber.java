@@ -1,11 +1,9 @@
 package software.spool.core.port.decorator;
 
-import software.spool.core.port.bus.Handler;
+import software.spool.core.port.bus.*;
 import software.spool.core.exception.EventBrokerListenException;
 import software.spool.core.exception.SpoolException;
 import software.spool.core.model.Event;
-import software.spool.core.port.bus.EventSubscriber;
-import software.spool.core.port.bus.Subscription;
 
 /**
  * Decorator that wraps an {@link EventSubscriber} and normalises any
@@ -23,13 +21,13 @@ public class SafeEventSubscriber implements EventSubscriber {
     }
 
     @Override
-    public <E extends Event> Subscription on(Class<E> event, Handler<E> handler) {
+    public <E extends Event> Subscription subscribe(Destination destination, Class<E> eventType, Handler<BrokerMessage<E>> handler) throws EventBrokerListenException {
         try {
-            return listener.on(event, handler);
+            return listener.subscribe(destination, eventType, handler);
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {
-            throw new EventBrokerListenException(event, e.getMessage(), e);
+            throw new EventBrokerListenException(eventType, e.getMessage(), e);
         }
     }
 

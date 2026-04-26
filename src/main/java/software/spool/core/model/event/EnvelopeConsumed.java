@@ -7,20 +7,19 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Emitted when an inbox item has been successfully consumed by the Ingester.
- */
 public record EnvelopeConsumed(
         String eventId,
         Instant timestamp,
         String correlationId,
         String causationId,
-        IdempotencyKey idempotencyKey) implements SpoolEvent {
+        IdempotencyKey idempotencyKey,
+        String moduleId) implements SpoolEvent {
 
     public EnvelopeConsumed {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
+        Objects.requireNonNull(moduleId, "idempotencyKey is required");
     }
 
     public static Builder builder() {
@@ -31,6 +30,7 @@ public record EnvelopeConsumed(
         private String correlationId;
         private String causationId;
         private IdempotencyKey idempotencyKey;
+        private String moduleId;
 
         public Builder from(final SpoolEvent cause) {
             this.correlationId = cause.correlationId();
@@ -60,13 +60,19 @@ public record EnvelopeConsumed(
             return this;
         }
 
+        public Builder moduleId(final String moduleId) {
+            this.moduleId = moduleId;
+            return this;
+        }
+
         public EnvelopeConsumed build() {
             return new EnvelopeConsumed(
                     UUID.randomUUID().toString(),
                     Instant.now(),
                     correlationId,
                     causationId,
-                    idempotencyKey);
+                    idempotencyKey,
+                    moduleId);
         }
     }
 }

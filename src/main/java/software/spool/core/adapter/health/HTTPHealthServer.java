@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import software.spool.core.adapter.jackson.RecordSerializerFactory;
+import software.spool.core.adapter.logging.LoggerFactory;
 import software.spool.core.port.health.NodeHealthPayload;
 import software.spool.core.port.health.HealthServer;
 
@@ -37,8 +38,17 @@ public class HTTPHealthServer implements HealthServer {
             t.setDaemon(true);
             return t;
         }));
-        server.start();
-        System.out.println("Health server started on port " + port);
+
+        Thread starter = new Thread(() -> server.start(), "spool-health-starter");
+        starter.setDaemon(true);
+        starter.start();
+        try {
+            starter.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        LoggerFactory.getLogger(HealthServer.class).info("Health server started on port " + port);
     }
 
     @Override

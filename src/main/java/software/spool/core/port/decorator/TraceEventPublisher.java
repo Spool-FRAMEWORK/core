@@ -1,5 +1,7 @@
 package software.spool.core.port.decorator;
 
+import software.spool.core.port.bus.BrokerMessage;
+import software.spool.core.port.bus.Destination;
 import software.spool.core.port.bus.EventPublisher;
 import software.spool.core.exception.EventBrokerEmitException;
 import software.spool.core.model.Event;
@@ -20,10 +22,10 @@ public class TraceEventPublisher implements EventPublisher {
     }
 
     @Override
-    public void publish(Event event) throws EventBrokerEmitException {
-        TraceScope scope = tracer.send(event);
+    public <E extends Event> void publish(Destination destination, BrokerMessage<E> message) throws EventBrokerEmitException {
+        TraceScope scope = tracer.send(message.payload());
         try {
-            bus.publish(event);
+            bus.publish(destination, message);
         } catch (Exception e) {
             scope.error(e);
             throw e;

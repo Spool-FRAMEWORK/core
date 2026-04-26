@@ -3,6 +3,7 @@ package software.spool.core.port.decorator;
 import software.spool.core.exception.InboxUpdateException;
 import software.spool.core.exception.SpoolException;
 import software.spool.core.model.EnvelopeStatus;
+import software.spool.core.model.vo.Envelope;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.port.inbox.InboxUpdater;
 
@@ -22,7 +23,7 @@ public class SafeInboxUpdater implements InboxUpdater {
     }
 
     @Override
-    public InboxItem update(IdempotencyKey idempotencyKey, EnvelopeStatus status) {
+    public Envelope update(IdempotencyKey idempotencyKey, EnvelopeStatus status) {
         try {
             return updater.update(idempotencyKey, status);
         } catch (SpoolException e) {

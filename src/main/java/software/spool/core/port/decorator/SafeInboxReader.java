@@ -4,7 +4,6 @@ import software.spool.core.exception.InboxReadException;
 import software.spool.core.exception.SpoolException;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.EnvelopeStatus;
-import software.spool.core.port.inbox.InboxReader;
 
 import java.util.Optional;
 import java.util.stream.Stream;

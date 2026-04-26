@@ -3,7 +3,6 @@ package software.spool.core.adapter.memory;
 import software.spool.core.exception.InboxReadException;
 import software.spool.core.model.*;
 import software.spool.core.model.vo.IdempotencyKey;
-import software.spool.core.port.inbox.InboxReader;
 import software.spool.core.port.inbox.InboxUpdater;
 
 import java.util.Optional;

@@ -3,7 +3,7 @@ package software.spool.core.port.inbox;
 import software.spool.core.exception.InboxReadException;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.vo.InboxItem;
-import software.spool.core.model.InboxItemStatus;
+import software.spool.core.model.EnvelopeStatus;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -19,6 +19,6 @@ public interface InboxReader {
      * @return a stream of matching inbox items
      * @throws InboxReadException if the query fails
      */
-    Stream<InboxItem> findByStatus(InboxItemStatus status) throws InboxReadException;
+    Stream<InboxItem> findByStatus(EnvelopeStatus status) throws InboxReadException;
     Optional<InboxItem> getBy(IdempotencyKey idempotencyKey) throws InboxReadException;
 }

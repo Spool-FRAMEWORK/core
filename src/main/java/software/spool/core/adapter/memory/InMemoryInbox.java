@@ -24,7 +24,7 @@ public class InMemoryInbox implements InboxUpdater, InboxReader {
     private final ConcurrentHashMap<IdempotencyKey, InboxItem> items = new ConcurrentHashMap<>();
 
     @Override
-    public InboxItem update(IdempotencyKey idempotencyKey, InboxItemStatus status) {
+    public InboxItem update(IdempotencyKey idempotencyKey, EnvelopeStatus status) {
         InboxItem existing = items.get(idempotencyKey);
         if (existing == null)
             return null;
@@ -40,7 +40,7 @@ public class InMemoryInbox implements InboxUpdater, InboxReader {
      * @return a stream of matching inbox items
      */
     @Override
-    public Stream<InboxItem> findByStatus(InboxItemStatus status) {
+    public Stream<InboxItem> findByStatus(EnvelopeStatus status) {
         return items.values().stream()
                 .filter(item -> item.status() == status);
     }

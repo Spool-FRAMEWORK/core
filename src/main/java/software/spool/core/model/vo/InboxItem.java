@@ -1,6 +1,6 @@
 package software.spool.core.model.vo;
 
-import software.spool.core.model.InboxItemStatus;
+import software.spool.core.model.EnvelopeStatus;
 
 import java.time.Instant;
 
@@ -23,10 +23,10 @@ public record InboxItem(
         EventMetadata metadata,
         PartitionKeySchema partitionKeySchema,
         String payload,
-        InboxItemStatus status,
+        EnvelopeStatus status,
         Instant timestamp) {
 
-    public InboxItem withStatus(InboxItemStatus newStatus) {
+    public InboxItem withStatus(EnvelopeStatus newStatus) {
         return new InboxItem(idempotencyKey, metadata, partitionKeySchema, payload, newStatus, timestamp);
     }
 }

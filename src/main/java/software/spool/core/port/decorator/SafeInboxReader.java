@@ -4,7 +4,7 @@ import software.spool.core.exception.InboxReadException;
 import software.spool.core.exception.SpoolException;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.vo.InboxItem;
-import software.spool.core.model.InboxItemStatus;
+import software.spool.core.model.EnvelopeStatus;
 import software.spool.core.port.inbox.InboxReader;
 
 import java.util.Optional;
@@ -22,7 +22,7 @@ public class SafeInboxReader implements InboxReader {
     }
 
     @Override
-    public Stream<InboxItem> findByStatus(InboxItemStatus status) {
+    public Stream<InboxItem> findByStatus(EnvelopeStatus status) {
         try {
             return reader.findByStatus(status);
         } catch (SpoolException e) {

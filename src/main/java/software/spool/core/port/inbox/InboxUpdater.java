@@ -1,8 +1,8 @@
 package software.spool.core.port.inbox;
 
 import software.spool.core.exception.InboxUpdateException;
+import software.spool.core.model.EnvelopeStatus;
 import software.spool.core.model.vo.IdempotencyKey;
-import software.spool.core.model.InboxItemStatus;
 import software.spool.core.model.vo.InboxItem;
 
 /**
@@ -19,5 +19,5 @@ public interface InboxUpdater {
      * @return the updated {@link InboxItem}
      * @throws InboxUpdateException if the update fails
      */
-    InboxItem update(IdempotencyKey idempotencyKey, InboxItemStatus status) throws InboxUpdateException;
+    InboxItem update(IdempotencyKey idempotencyKey, EnvelopeStatus status) throws InboxUpdateException;
 }

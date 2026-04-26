@@ -7,7 +7,6 @@ import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import software.spool.core.adapter.jackson.RecordSerializerFactory;
 import software.spool.core.exception.EventBrokerEmitException;
-import software.spool.core.exception.EventBusEmitException;
 import software.spool.core.model.Event;
 import software.spool.core.port.bus.BrokerMessage;
 import software.spool.core.port.bus.Destination;

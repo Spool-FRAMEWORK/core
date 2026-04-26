@@ -34,7 +34,7 @@ public class InMemoryEventBroker implements EventBroker {
 
     @Override
     @SuppressWarnings("unchecked")
-    public void emit(Event event) throws EventBusEmitException {
+    public void publish(Event event) throws EventBusEmitException {
         try {
             List<Handler<?>> handlers = registry.getOrDefault(
                     event.getClass(),

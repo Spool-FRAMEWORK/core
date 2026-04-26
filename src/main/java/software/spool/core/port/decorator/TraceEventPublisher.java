@@ -20,10 +20,10 @@ public class TraceEventPublisher implements EventPublisher {
     }
 
     @Override
-    public void emit(Event event) throws EventBusEmitException {
+    public void publish(Event event) throws EventBusEmitException {
         TraceScope scope = tracer.send(event);
         try {
-            bus.emit(event);
+            bus.publish(event);
         } catch (Exception e) {
             scope.error(e);
             throw e;

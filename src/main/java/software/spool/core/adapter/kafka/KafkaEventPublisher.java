@@ -20,7 +20,7 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
     }
 
     @Override
-    public void emit(Event event) throws EventBusEmitException {
+    public void publish(Event event) throws EventBusEmitException {
         String topic = event.getClass().getSimpleName();
 
         try {

@@ -21,9 +21,9 @@ public class SafeEventPublisher implements EventPublisher {
     }
 
     @Override
-    public void emit(Event event) {
+    public void publish(Event event) {
         try {
-            emitter.emit(event);
+            emitter.publish(event);
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {

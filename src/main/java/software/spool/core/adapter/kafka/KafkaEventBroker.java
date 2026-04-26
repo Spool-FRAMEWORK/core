@@ -15,8 +15,8 @@ public class KafkaEventBroker implements EventBroker {
     }
 
     @Override
-    public void emit(Event event) throws EventBusEmitException {
-        emitter.emit(event);
+    public void publish(Event event) throws EventBusEmitException {
+        emitter.publish(event);
     }
 
     @Override

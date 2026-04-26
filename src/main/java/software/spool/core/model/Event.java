@@ -18,4 +18,7 @@ public interface Event {
     String correlationId();
 
     Instant timestamp();
+    default String eventType() {
+        return getClass().getSimpleName();
+    }
 }

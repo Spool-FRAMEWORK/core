@@ -2,10 +2,10 @@ package software.spool.core.port.decorator;
 
 import software.spool.core.exception.InboxUpdateException;
 import software.spool.core.exception.SpoolException;
-import software.spool.core.model.IdempotencyKey;
-import software.spool.core.model.InboxItem;
-import software.spool.core.model.InboxItemStatus;
-import software.spool.core.port.InboxUpdater;
+import software.spool.core.model.EnvelopeStatus;
+import software.spool.core.model.vo.Envelope;
+import software.spool.core.model.vo.IdempotencyKey;
+import software.spool.core.port.inbox.InboxUpdater;
 
 /**
  * Decorator that wraps an {@link InboxUpdater} and normalises any
@@ -23,7 +23,7 @@ public class SafeInboxUpdater implements InboxUpdater {
     }
 
     @Override
-    public InboxItem update(IdempotencyKey idempotencyKey, InboxItemStatus status) {
+    public Envelope update(IdempotencyKey idempotencyKey, EnvelopeStatus status) {
         try {
             return updater.update(idempotencyKey, status);
         } catch (SpoolException e) {

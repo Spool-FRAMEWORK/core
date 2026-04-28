@@ -9,7 +9,9 @@ import software.spool.core.port.inbox.InboxEnvelopeResolver;
 import software.spool.core.port.inbox.InboxStatusQuery;
 import software.spool.core.port.inbox.InboxUpdater;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -42,12 +44,10 @@ public class InMemoryInbox implements InboxUpdater, InboxEnvelopeResolver, Inbox
     }
 
     @Override
-    public Envelope update(Envelope envelope) throws InboxUpdateException {
-        return update(envelope.idempotencyKey(), envelope.status());
-    }
-
-    @Override
-    public Envelope update(IdempotencyKey idempotencyKey, EnvelopeStatus status) throws InboxUpdateException {
-        return envelopes.put(idempotencyKey, envelopes.get(idempotencyKey).withStatus(status));
+    public Collection<Envelope> update(Collection<IdempotencyKey> idempotencyKeys, EnvelopeStatus status) throws InboxUpdateException {
+        return idempotencyKeys.stream()
+                .filter(i -> this.envelopes.put(i, this.envelopes.get(i).withStatus(status)) != null)
+                .map(this.envelopes::get)
+                .toList();
     }
 }

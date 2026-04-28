@@ -7,6 +7,8 @@ import software.spool.core.model.vo.Envelope;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.port.inbox.InboxUpdater;
 
+import java.util.Collection;
+
 /**
  * Decorator that wraps an {@link InboxUpdater} and normalises any
  * unchecked exception into an {@link InboxUpdateException}.
@@ -23,24 +25,13 @@ public class SafeInboxUpdater implements InboxUpdater {
     }
 
     @Override
-    public Envelope update(Envelope envelope) {
+    public Collection<Envelope> update(Collection<IdempotencyKey> idempotencyKeys, EnvelopeStatus status) throws InboxUpdateException {
         try {
-            return updater.update(envelope);
+            return updater.update(idempotencyKeys, status);
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {
-            throw new InboxUpdateException(envelope.idempotencyKey(), e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public Envelope update(IdempotencyKey idempotencyKey, EnvelopeStatus status) throws InboxUpdateException {
-        try {
-            return updater.update(idempotencyKey, status);
-        } catch (SpoolException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new InboxUpdateException(idempotencyKey, e.getMessage(), e);
+            throw new InboxUpdateException(idempotencyKeys, e.getMessage(), e);
         }
     }
 

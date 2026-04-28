@@ -6,6 +6,8 @@ import software.spool.core.model.vo.Envelope;
 import software.spool.core.model.vo.IdempotencyKey;
 
 public interface InboxUpdater {
-    Envelope update(Envelope envelope) throws InboxUpdateException;
+    default Envelope update(Envelope envelope) throws InboxUpdateException {
+        return update(envelope.idempotencyKey(), envelope.status());
+    };
     Envelope update(IdempotencyKey idempotencyKey, EnvelopeStatus status) throws InboxUpdateException;
 }

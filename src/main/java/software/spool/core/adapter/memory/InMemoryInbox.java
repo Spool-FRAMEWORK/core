@@ -43,6 +43,11 @@ public class InMemoryInbox implements InboxUpdater, InboxEnvelopeResolver, Inbox
 
     @Override
     public Envelope update(Envelope envelope) throws InboxUpdateException {
-        return this.envelopes.put(envelope.idempotencyKey(), envelope);
+        return update(envelope.idempotencyKey(), envelope.status());
+    }
+
+    @Override
+    public Envelope update(IdempotencyKey idempotencyKey, EnvelopeStatus status) throws InboxUpdateException {
+        return envelopes.put(idempotencyKey, envelopes.get(idempotencyKey).withStatus(status));
     }
 }

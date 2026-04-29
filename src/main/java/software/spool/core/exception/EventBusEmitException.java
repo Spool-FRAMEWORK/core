@@ -5,15 +5,15 @@ import software.spool.core.model.Event;
 /**
  * Thrown when emitting an event to the event bus fails.
  */
-public class EventBrokerEmitException extends SpoolException {
+public class EventBusEmitException extends SpoolException {
     private final Event event;
 
-    public EventBrokerEmitException(Event event, String message) {
+    public EventBusEmitException(Event event, String message) {
         super("Error occurred while emitting to event bus: " + event + ". " + message);
         this.event = event;
     }
 
-    public EventBrokerEmitException(Event event, String message, Throwable cause) {
+    public EventBusEmitException(Event event, String message, Throwable cause) {
         super("Error occurred while emitting to event bus: " + event + ". " + message, cause);
         this.event = event;
     }

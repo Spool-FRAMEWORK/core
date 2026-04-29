@@ -1,11 +1,11 @@
 package software.spool.core.adapter.memory;
 
-import software.spool.core.exception.EventBrokerEmitException;
+import software.spool.core.exception.EventBusEmitException;
 import software.spool.core.exception.EventBrokerListenException;
 import software.spool.core.model.Event;
 import software.spool.core.port.bus.BrokerMessage;
 import software.spool.core.port.bus.Destination;
-import software.spool.core.port.bus.EventBroker;
+import software.spool.core.port.bus.EventBus;
 import software.spool.core.port.bus.Handler;
 import software.spool.core.port.bus.Subscription;
 
@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Thread-safe in-memory {@link EventBroker} implementation for local
+ * Thread-safe in-memory {@link EventBus} implementation for local
  * testing and single-process deployments.
  *
  * <p>
@@ -22,7 +22,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * dispatched synchronously on the calling thread.
  * </p>
  */
-public class InMemoryEventBroker implements EventBroker {
+public class InMemoryEventBus implements EventBus {
 
     private final ConcurrentHashMap<Destination, CopyOnWriteArrayList<Handler<?>>> registry =
             new ConcurrentHashMap<>();
@@ -47,7 +47,7 @@ public class InMemoryEventBroker implements EventBroker {
     public <E extends Event> void publish(
             Destination destination,
             BrokerMessage<E> message
-    ) throws EventBrokerEmitException {
+    ) throws EventBusEmitException {
         try {
             List<Handler<?>> handlers = registry.getOrDefault(
                     destination,
@@ -58,7 +58,7 @@ public class InMemoryEventBroker implements EventBroker {
                 ((Handler<BrokerMessage<E>>) handler).handle(message);
             }
         } catch (Exception e) {
-            throw new EventBrokerEmitException(
+            throw new EventBusEmitException(
                     message.payload(),
                     "Failed to publish event to destination [" + destination.value() + "]",
                     e

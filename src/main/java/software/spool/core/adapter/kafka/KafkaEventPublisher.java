@@ -6,7 +6,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import software.spool.core.adapter.jackson.RecordSerializerFactory;
-import software.spool.core.exception.EventBrokerEmitException;
+import software.spool.core.exception.EventBusEmitException;
 import software.spool.core.model.Event;
 import software.spool.core.port.bus.BrokerMessage;
 import software.spool.core.port.bus.Destination;
@@ -23,7 +23,7 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
     }
 
     @Override
-    public <E extends Event> void publish(Destination destination, BrokerMessage<E> message) throws EventBrokerEmitException {
+    public <E extends Event> void publish(Destination destination, BrokerMessage<E> message) throws EventBusEmitException {
         try {
             byte[] payload = RecordSerializerFactory.record()
                     .serialize(message.payload())
@@ -34,7 +34,7 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
 
             producer.send(record, (metadata, ex) -> {
                 if (ex != null) {
-                    throw new EventBrokerEmitException(
+                    throw new EventBusEmitException(
                             message.payload(),
                             "Failed to deliver message to destination " + destination.value(),
                             ex
@@ -42,7 +42,7 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
                 }
             });
         } catch (Exception e) {
-            throw new EventBrokerEmitException(
+            throw new EventBusEmitException(
                     message.payload(),
                     "Failed to emit message to Kafka destination [" + destination.value() + "]",
                     e

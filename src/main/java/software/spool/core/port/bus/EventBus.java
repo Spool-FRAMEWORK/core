@@ -1,6 +1,6 @@
 package software.spool.core.port.bus;
 
-import software.spool.core.adapter.memory.InMemoryEventBroker;
+import software.spool.core.adapter.memory.InMemoryEventBus;
 
 /**
  * Combines {@link EventPublisher} and {@link EventSubscriber} into a
@@ -9,8 +9,8 @@ import software.spool.core.adapter.memory.InMemoryEventBroker;
  * <p>
  * Implementations can both emit events and register handlers for them.
  * The in-memory implementation is provided by
- * {@link InMemoryEventBroker}.
+ * {@link InMemoryEventBus}.
  * </p>
  */
-public interface EventBroker extends EventPublisher, EventSubscriber {
+public interface EventBus extends EventPublisher, EventSubscriber {
 }

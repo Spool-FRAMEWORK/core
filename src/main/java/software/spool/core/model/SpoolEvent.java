@@ -15,8 +15,4 @@ public interface SpoolEvent extends Event {
     default EventMetadata metadata() {
         return new EventMetadata();
     }
-
-    default String route() {
-        return "spool." + eventType();
-    }
 }

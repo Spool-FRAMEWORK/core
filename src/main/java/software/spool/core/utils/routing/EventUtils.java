@@ -1,6 +1,6 @@
 package software.spool.core.utils.routing;
 
-import software.spool.core.model.event.EventAddress;
+import software.spool.core.model.annotation.EventAddress;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

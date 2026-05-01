@@ -8,43 +8,49 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import software.spool.core.adapter.jackson.RecordSerializerFactory;
 import software.spool.core.exception.EventBusEmitException;
 import software.spool.core.model.Event;
-import software.spool.core.port.bus.BrokerMessage;
-import software.spool.core.port.bus.Destination;
 import software.spool.core.port.bus.EventPublisher;
+import software.spool.core.utils.routing.DefaultEventRouter;
+import software.spool.core.utils.routing.EventRouter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
     private final KafkaProducer<String, byte[]> producer;
+    private final EventRouter router;
+
+    public KafkaEventPublisher(KafkaEventBusConfig config, EventRouter router) {
+        this.producer = new KafkaProducer<>(buildProducerProps(config));
+        this.router = router;
+    }
 
     public KafkaEventPublisher(KafkaEventBusConfig config) {
-        this.producer = new KafkaProducer<>(buildProducerProps(config));
+        this(config, new DefaultEventRouter());
     }
 
     @Override
-    public <E extends Event> void publish(Destination destination, BrokerMessage<E> message) throws EventBusEmitException {
+    public <E extends Event> void publish(E event) throws EventBusEmitException {
         try {
             byte[] payload = RecordSerializerFactory.record()
-                    .serialize(message.payload())
+                    .serialize(event)
                     .getBytes(StandardCharsets.UTF_8);
 
             ProducerRecord<String, byte[]> record =
-                    new ProducerRecord<>(destination.value(), message.key(), payload);
+                    new ProducerRecord<>(router.resolve(event.getClass()), payload);
 
             producer.send(record, (metadata, ex) -> {
                 if (ex != null) {
                     throw new EventBusEmitException(
-                            message.payload(),
-                            "Failed to deliver message to destination " + destination.value(),
+                            event,
+                            "Failed to deliver message to destination " + router.resolve(event.getClass()),
                             ex
                     );
                 }
             });
         } catch (Exception e) {
             throw new EventBusEmitException(
-                    message.payload(),
-                    "Failed to emit message to Kafka destination [" + destination.value() + "]",
+                    event,
+                    "Failed to emit message to Kafka destination [" + router.resolve(event.getClass()) + "]",
                     e
             );
         }

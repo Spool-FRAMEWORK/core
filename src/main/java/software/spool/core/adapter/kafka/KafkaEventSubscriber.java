@@ -6,21 +6,29 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import software.spool.core.exception.EventBusSubscriptionException;
 import software.spool.core.model.Event;
-import software.spool.core.port.bus.BrokerMessage;
-import software.spool.core.port.bus.Destination;
 import software.spool.core.port.bus.EventSubscriber;
 import software.spool.core.port.bus.Handler;
 import software.spool.core.port.bus.Subscription;
+import software.spool.core.utils.routing.DefaultEventRouter;
+import software.spool.core.utils.routing.EventRouter;
 
 import java.util.List;
 import java.util.Properties;
 
 public class KafkaEventSubscriber implements EventSubscriber {
     private final Properties baseProps;
+    private final EventRouter router;
+
+    public KafkaEventSubscriber(KafkaEventBusConfig config, EventRouter router) {
+        this.baseProps = buildBaseProps(config);
+        this.router = router;
+    }
 
     public KafkaEventSubscriber(KafkaEventBusConfig config) {
-        this.baseProps = buildBaseProps(config);
+        this(config, new DefaultEventRouter());
     }
+
+
 
     @Override
     public <E extends Event> Subscription subscribe(
@@ -33,7 +41,7 @@ public class KafkaEventSubscriber implements EventSubscriber {
 
         try {
             KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(props);
-            consumer.subscribe(List.of(destination.value()));
+            consumer.subscribe(List.of(router.resolve(eventType)));
 
             KafkaSubscription<E> subscription =
                     new KafkaSubscription<>(consumer, handler, eventType);
@@ -44,7 +52,7 @@ public class KafkaEventSubscriber implements EventSubscriber {
         } catch (Exception e) {
             throw new EventBusSubscriptionException(
                     eventType,
-                    "Failed to subscribe to Kafka destination [" + destination.value() + "]",
+                    "Failed to subscribe to Kafka destination [" + router.resolve(eventType) + "]",
                     e
             );
         }

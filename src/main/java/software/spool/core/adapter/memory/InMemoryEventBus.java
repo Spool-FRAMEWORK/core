@@ -3,11 +3,11 @@ package software.spool.core.adapter.memory;
 import software.spool.core.exception.EventBusEmitException;
 import software.spool.core.exception.EventBusSubscriptionException;
 import software.spool.core.model.Event;
-import software.spool.core.port.bus.BrokerMessage;
-import software.spool.core.port.bus.Destination;
 import software.spool.core.port.bus.EventBus;
 import software.spool.core.port.bus.Handler;
 import software.spool.core.port.bus.Subscription;
+import software.spool.core.utils.routing.DefaultEventRouter;
+import software.spool.core.utils.routing.EventRouter;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,6 +25,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class InMemoryEventBus implements EventBus {
     private final ConcurrentHashMap<Class<? extends Event>, CopyOnWriteArrayList<Handler<?>>> registry =
             new ConcurrentHashMap<>();
+    private final EventRouter router;
+
+    public InMemoryEventBus(EventRouter router) {
+        this.router = router;
+    }
+
+    public InMemoryEventBus() {
+        this(new DefaultEventRouter());
+    }
 
     @Override
     public <E extends Event> Subscription subscribe(
@@ -52,7 +61,7 @@ public class InMemoryEventBus implements EventBus {
         } catch (Exception e) {
             throw new EventBusEmitException(
                     event,
-                    "Failed to publish event to destination [" + event.address() + "]",
+                    "Failed to publish event to destination [" + router.resolve(event.getClass()) + "]",
                     e
             );
         }

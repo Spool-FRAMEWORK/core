@@ -15,12 +15,12 @@ public class KafkaEventBus implements EventBus {
     }
 
     @Override
-    public <E extends Event> void publish(Destination destination, BrokerMessage<E> message) throws EventBusEmitException {
-        publisher.publish(destination, message);
+    public <E extends Event> void publish(E event) throws EventBusEmitException {
+        publisher.publish(event);
     }
 
     @Override
-    public <E extends Event> Subscription subscribe(Destination destination, Class<E> eventType, Handler<BrokerMessage<E>> handler) throws EventBusSubscriptionException {
-        return subscriber.subscribe(destination, eventType, handler);
+    public <E extends Event> Subscription subscribe(Class<E> eventType, Handler<E> handler) throws EventBusSubscriptionException {
+        return subscriber.subscribe(eventType, handler);
     }
 }

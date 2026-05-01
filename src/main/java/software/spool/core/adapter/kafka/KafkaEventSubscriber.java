@@ -4,7 +4,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import software.spool.core.exception.EventBrokerListenException;
+import software.spool.core.exception.EventBusSubscriptionException;
 import software.spool.core.model.Event;
 import software.spool.core.port.bus.BrokerMessage;
 import software.spool.core.port.bus.Destination;
@@ -24,13 +24,12 @@ public class KafkaEventSubscriber implements EventSubscriber {
 
     @Override
     public <E extends Event> Subscription subscribe(
-            Destination destination,
             Class<E> eventType,
-            Handler<BrokerMessage<E>> handler
-    ) throws EventBrokerListenException {
+            Handler<E> handler
+    ) throws EventBusSubscriptionException {
         Properties props = new Properties();
         props.putAll(baseProps);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "spool." + destination.value());
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, eventType);
 
         try {
             KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(props);
@@ -43,7 +42,7 @@ public class KafkaEventSubscriber implements EventSubscriber {
             return subscription;
 
         } catch (Exception e) {
-            throw new EventBrokerListenException(
+            throw new EventBusSubscriptionException(
                     eventType,
                     "Failed to subscribe to Kafka destination [" + destination.value() + "]",
                     e

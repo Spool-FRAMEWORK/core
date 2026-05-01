@@ -1,7 +1,7 @@
 package software.spool.core.adapter.memory;
 
 import software.spool.core.exception.EventBusEmitException;
-import software.spool.core.exception.EventBrokerListenException;
+import software.spool.core.exception.EventBusSubscriptionException;
 import software.spool.core.model.Event;
 import software.spool.core.port.bus.BrokerMessage;
 import software.spool.core.port.bus.Destination;
@@ -23,44 +23,36 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * </p>
  */
 public class InMemoryEventBus implements EventBus {
-
-    private final ConcurrentHashMap<Destination, CopyOnWriteArrayList<Handler<?>>> registry =
+    private final ConcurrentHashMap<Class<? extends Event>, CopyOnWriteArrayList<Handler<?>>> registry =
             new ConcurrentHashMap<>();
 
     @Override
     public <E extends Event> Subscription subscribe(
-            Destination destination,
             Class<E> eventType,
-            Handler<BrokerMessage<E>> handler
-    ) throws EventBrokerListenException {
-
-        registry.computeIfAbsent(destination, ignored -> new CopyOnWriteArrayList<>())
+            Handler<E> handler
+    ) throws EventBusSubscriptionException {
+        registry.computeIfAbsent(eventType, ignored -> new CopyOnWriteArrayList<>())
                 .add(handler);
-
         return new InMemorySubscription(
-                () -> registry.getOrDefault(destination, new CopyOnWriteArrayList<>()).remove(handler)
+                () -> registry.getOrDefault(eventType, new CopyOnWriteArrayList<>()).remove(handler)
         );
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E extends Event> void publish(
-            Destination destination,
-            BrokerMessage<E> message
-    ) throws EventBusEmitException {
+    public <E extends Event> void publish(E event) throws EventBusEmitException {
         try {
             List<Handler<?>> handlers = registry.getOrDefault(
-                    destination,
+                    event.getClass(),
                     new CopyOnWriteArrayList<>()
             );
-
             for (Handler<?> handler : handlers) {
-                ((Handler<BrokerMessage<E>>) handler).handle(message);
+                ((Handler<E>) handler).handle(event);
             }
         } catch (Exception e) {
             throw new EventBusEmitException(
-                    message.payload(),
-                    "Failed to publish event to destination [" + destination.value() + "]",
+                    event,
+                    "Failed to publish event to destination [" + event.address() + "]",
                     e
             );
         }

@@ -1,7 +1,7 @@
 package software.spool.core.adapter.kafka;
 
 import software.spool.core.exception.EventBusEmitException;
-import software.spool.core.exception.EventBrokerListenException;
+import software.spool.core.exception.EventBusSubscriptionException;
 import software.spool.core.model.Event;
 import software.spool.core.port.bus.*;
 
@@ -20,7 +20,7 @@ public class KafkaEventBus implements EventBus {
     }
 
     @Override
-    public <E extends Event> Subscription subscribe(Destination destination, Class<E> eventType, Handler<BrokerMessage<E>> handler) throws EventBrokerListenException {
+    public <E extends Event> Subscription subscribe(Destination destination, Class<E> eventType, Handler<BrokerMessage<E>> handler) throws EventBusSubscriptionException {
         return subscriber.subscribe(destination, eventType, handler);
     }
 }

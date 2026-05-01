@@ -1,5 +1,6 @@
 package software.spool.core.model.failure;
 
+import software.spool.core.model.SpoolFailedEvent;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.SpoolEvent;
 import software.spool.core.model.event.EnvelopeStored;
@@ -21,7 +22,7 @@ public record ItemPublishFailed(
         String correlationId,
         String causationId,
         IdempotencyKey idempotencyKey,
-        String errorMessage) implements SpoolEvent {
+        String errorMessage) implements SpoolFailedEvent {
 
     public ItemPublishFailed {
         Objects.requireNonNull(eventId, "eventId is required");

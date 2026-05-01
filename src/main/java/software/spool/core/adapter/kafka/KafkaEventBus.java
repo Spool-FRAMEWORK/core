@@ -9,9 +9,9 @@ public class KafkaEventBus implements EventBus {
     private final EventPublisher publisher;
     private final EventSubscriber subscriber;
 
-    public KafkaEventBus(EventPublisher publisher, EventSubscriber subscriber) {
-        this.publisher = publisher;
-        this.subscriber = subscriber;
+    public KafkaEventBus(KafkaEventBusConfig config) {
+        this.publisher = new KafkaEventPublisher(config);
+        this.subscriber = new KafkaEventSubscriber(config);
     }
 
     @Override

@@ -1,4 +1,9 @@
-package software.spool.core.circuitbreaker;
+package software.spool.core.circuitbreaker.control;
+
+import software.spool.core.circuitbreaker.model.CircuitBreakerPolicy;
+import software.spool.core.circuitbreaker.model.CircuitBreakerSnapshot;
+import software.spool.core.circuitbreaker.model.CircuitBreakerState;
+import software.spool.core.circuitbreaker.model.CircuitBreakerStatus;
 
 import java.time.Instant;
 

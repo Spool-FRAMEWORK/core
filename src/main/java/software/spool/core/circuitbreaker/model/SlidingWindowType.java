@@ -1,4 +1,4 @@
-package software.spool.core.circuitbreaker;
+package software.spool.core.circuitbreaker.model;
 
 public enum SlidingWindowType {
     TIME_BASED,

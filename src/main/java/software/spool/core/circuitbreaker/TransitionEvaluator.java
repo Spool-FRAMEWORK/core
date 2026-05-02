@@ -16,12 +16,12 @@ public class TransitionEvaluator {
     public CircuitBreakerState evaluateOnSuccess(CircuitBreakerState state,
                                                  CircuitBreakerPolicy policy,
                                                  Instant now) {
-        CircuitBreakerSnapshot updated = state.snapshot().withSuccess(now, policy.samplingWindow());
+        CircuitBreakerSnapshot updated = state.snapshot().withSuccess(now, policy);
         CircuitBreakerState next = new CircuitBreakerState(updated, state.status(), state.openedAt());
 
         if (state.status() == CircuitBreakerStatus.HALF_OPEN) {
             if (updated.successes() >= policy.halfOpenPermits()) {
-                return next.reset(now, policy.samplingWindow());
+                return next.reset(now);
             }
             return next;
         }
@@ -31,7 +31,7 @@ public class TransitionEvaluator {
     public CircuitBreakerState evaluateOnFailure(CircuitBreakerState state,
                                                  CircuitBreakerPolicy policy,
                                                  Instant now) {
-        CircuitBreakerSnapshot updated = state.snapshot().withFailure(now, policy.samplingWindow());
+        CircuitBreakerSnapshot updated = state.snapshot().withFailure(now, policy);
         CircuitBreakerState next = new CircuitBreakerState(updated, state.status(), state.openedAt());
 
         if (state.status() == CircuitBreakerStatus.HALF_OPEN) {

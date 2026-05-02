@@ -2,6 +2,7 @@ package software.spool.core.circuitbreaker;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayDeque;
 import java.util.Optional;
 
 public record CircuitBreakerState(
@@ -17,9 +18,9 @@ public record CircuitBreakerState(
         return new CircuitBreakerState(snapshot, CircuitBreakerStatus.OPEN, Optional.of(now));
     }
 
-    public CircuitBreakerState reset(Instant now, Duration samplingWindow) {
+    public CircuitBreakerState reset(Instant now) {
         CircuitBreakerSnapshot fresh = new CircuitBreakerSnapshot(
-                snapshot.id(), 0, 0, 0, now, snapshot.version() + 1
+                snapshot.id(), 0, 0, 0, now, new ArrayDeque<>(), snapshot.version() + 1
         );
         return new CircuitBreakerState(fresh, CircuitBreakerStatus.CLOSED, Optional.empty());
     }

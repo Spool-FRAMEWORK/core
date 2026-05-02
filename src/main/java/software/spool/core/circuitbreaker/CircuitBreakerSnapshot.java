@@ -1,5 +1,6 @@
 package software.spool.core.circuitbreaker;
 
+import java.time.Duration;
 import java.time.Instant;
 
 public record CircuitBreakerSnapshot(
@@ -10,19 +11,29 @@ public record CircuitBreakerSnapshot(
         Instant windowStartedAt,
         long version
 ) {
-    public boolean isWindowExpire() {
-        return Instant.now().isAfter(windowStartedAt);
+    public boolean isWindowExpired(Instant now, Duration samplingWindow) {
+        return now.isAfter(windowStartedAt.plus(samplingWindow));
     }
 
-    public CircuitBreakerSnapshot withFailures(int failures) {
-        return new CircuitBreakerSnapshot(id, failures, successes, halfOpenAttempts, windowStartedAt, version);
+    public CircuitBreakerSnapshot withFailure(Instant now, Duration samplingWindow) {
+        if (isWindowExpired(now, samplingWindow)) {
+            return new CircuitBreakerSnapshot(id, 1, 0, halfOpenAttempts, now, version + 1);
+        }
+        return new CircuitBreakerSnapshot(id, failures + 1, successes, halfOpenAttempts, windowStartedAt, version + 1);
     }
 
-    public CircuitBreakerSnapshot withSuccesses(int successes) {
-        return new CircuitBreakerSnapshot(id, failures, successes, halfOpenAttempts, windowStartedAt, version);
+    public CircuitBreakerSnapshot withSuccess(Instant now, Duration samplingWindow) {
+        if (isWindowExpired(now, samplingWindow)) {
+            return new CircuitBreakerSnapshot(id, 0, 1, halfOpenAttempts, now, version + 1);
+        }
+        return new CircuitBreakerSnapshot(id, failures, successes + 1, halfOpenAttempts, windowStartedAt, version + 1);
     }
 
-    public CircuitBreakerSnapshot withHalfOpenAttempts(int halfOpenAttempts) {
-        return new CircuitBreakerSnapshot(id, failures, successes, halfOpenAttempts, windowStartedAt, version);
+    public CircuitBreakerSnapshot withHalfOpenAttempt() {
+        return new CircuitBreakerSnapshot(id, failures, successes, halfOpenAttempts + 1, windowStartedAt, version + 1);
+    }
+
+    public int totalCalls() {
+        return failures + successes;
     }
 }

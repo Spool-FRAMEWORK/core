@@ -9,19 +9,22 @@ public record CircuitBreakerState(
         CircuitBreakerStatus status,
         Optional<Instant> openedAt
 ) {
-    public boolean isExpired(Duration cooldown) {
-        return openedAt().isPresent() && Instant.now().isAfter(openedAt.get());
+    public boolean isOpenExpired(Instant now, Duration cooldown) {
+        return openedAt.isPresent() && now.isAfter(openedAt.get().plus(cooldown));
     }
 
-    public CircuitBreakerState trip() {
-        return new CircuitBreakerState(snapshot, status, Optional.of(Instant.now()));
+    public CircuitBreakerState trip(Instant now) {
+        return new CircuitBreakerState(snapshot, CircuitBreakerStatus.OPEN, Optional.of(now));
     }
 
-    public CircuitBreakerState reset() {
-        return new CircuitBreakerState(snapshot, CircuitBreakerStatus.CLOSED, Optional.empty());
+    public CircuitBreakerState reset(Instant now, Duration samplingWindow) {
+        CircuitBreakerSnapshot fresh = new CircuitBreakerSnapshot(
+                snapshot.id(), 0, 0, 0, now, snapshot.version() + 1
+        );
+        return new CircuitBreakerState(fresh, CircuitBreakerStatus.CLOSED, Optional.empty());
     }
 
     public CircuitBreakerState toHalfOpen() {
-        return new CircuitBreakerState(snapshot, CircuitBreakerStatus.HALF_OPEN, Optional.of(Instant.now()));
+        return new CircuitBreakerState(snapshot, CircuitBreakerStatus.HALF_OPEN, openedAt);
     }
 }

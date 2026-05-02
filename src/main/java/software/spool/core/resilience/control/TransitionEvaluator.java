@@ -1,9 +1,9 @@
-package software.spool.core.circuitbreaker.control;
+package software.spool.core.resilience.control;
 
-import software.spool.core.circuitbreaker.model.CircuitBreakerPolicy;
-import software.spool.core.circuitbreaker.model.CircuitBreakerSnapshot;
-import software.spool.core.circuitbreaker.model.CircuitBreakerState;
-import software.spool.core.circuitbreaker.model.CircuitBreakerStatus;
+import software.spool.core.resilience.model.CircuitBreakerPolicy;
+import software.spool.core.resilience.model.CircuitBreakerSnapshot;
+import software.spool.core.resilience.model.CircuitBreakerState;
+import software.spool.core.resilience.model.CircuitBreakerStatus;
 
 import java.time.Instant;
 

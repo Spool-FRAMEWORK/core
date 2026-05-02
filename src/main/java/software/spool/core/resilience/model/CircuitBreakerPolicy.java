@@ -1,4 +1,4 @@
-package software.spool.core.circuitbreaker.model;
+package software.spool.core.resilience.model;
 
 import java.time.Duration;
 
@@ -16,7 +16,7 @@ public record CircuitBreakerPolicy(
     }
 
     public static Builder countBased() {
-        return new Builder(SlidingWindowType.TIME_BASED);
+        return new Builder(SlidingWindowType.COUNT_BASED);
     }
 
     public boolean shouldTrip(CircuitBreakerSnapshot snapshot) {

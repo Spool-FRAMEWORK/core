@@ -1,4 +1,4 @@
-package software.spool.core.circuitbreaker.exception;
+package software.spool.core.resilience.exception;
 
 public class CircuitBreakerOpenException extends RuntimeException {
     public CircuitBreakerOpenException(String id) {

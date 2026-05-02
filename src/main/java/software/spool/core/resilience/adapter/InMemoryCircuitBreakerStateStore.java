@@ -1,9 +1,9 @@
-package software.spool.core.circuitbreaker.adapter;
+package software.spool.core.resilience.adapter;
 
-import software.spool.core.circuitbreaker.model.CircuitBreakerState;
-import software.spool.core.circuitbreaker.model.CircuitBreakerSnapshot;
-import software.spool.core.circuitbreaker.model.CircuitBreakerStatus;
-import software.spool.core.circuitbreaker.port.CircuitBreakerStateStore;
+import software.spool.core.resilience.model.CircuitBreakerState;
+import software.spool.core.resilience.model.CircuitBreakerSnapshot;
+import software.spool.core.resilience.model.CircuitBreakerStatus;
+import software.spool.core.resilience.port.CircuitBreakerStateStore;
 
 import java.time.Instant;
 import java.util.ArrayDeque;
@@ -13,6 +13,11 @@ import java.util.concurrent.ConcurrentMap;
 
 public class InMemoryCircuitBreakerStateStore implements CircuitBreakerStateStore {
     private final ConcurrentMap<String, CircuitBreakerState> store = new ConcurrentHashMap<>();
+    private final static CircuitBreakerStateStore INSTANCE = new InMemoryCircuitBreakerStateStore();
+
+    public static CircuitBreakerStateStore instance() {
+        return INSTANCE;
+    }
 
     @Override
     public CircuitBreakerState load(String id) {

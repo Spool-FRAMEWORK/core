@@ -1,6 +1,6 @@
-package software.spool.core.circuitbreaker.port;
+package software.spool.core.resilience.port;
 
-import software.spool.core.circuitbreaker.model.CircuitBreakerState;
+import software.spool.core.resilience.model.CircuitBreakerState;
 
 public interface CircuitBreakerStateStore {
     CircuitBreakerState load(String id);

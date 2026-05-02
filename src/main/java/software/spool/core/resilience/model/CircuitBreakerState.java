@@ -1,4 +1,4 @@
-package software.spool.core.circuitbreaker.model;
+package software.spool.core.resilience.model;
 
 import java.time.Duration;
 import java.time.Instant;

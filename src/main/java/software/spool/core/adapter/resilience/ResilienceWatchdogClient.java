@@ -9,6 +9,7 @@ import software.spool.core.resilience.control.RetryingExecutor;
 import software.spool.core.resilience.control.TransitionEvaluator;
 import software.spool.core.resilience.exception.CircuitBreakerOpenException;
 import software.spool.core.resilience.model.CircuitBreakerPolicy;
+import software.spool.core.resilience.model.CircuitBreakerStatus;
 import software.spool.core.resilience.model.RetryPolicy;
 import software.spool.core.model.watchdog.ModuleIdentity;
 import software.spool.core.model.watchdog.ModuleState;
@@ -31,7 +32,8 @@ public class ResilienceWatchdogClient implements WatchdogClient {
         this.retryPolicy = RetryPolicy.fixedWithAbort(
                 3,
                 Duration.ofMillis(500),
-                ex -> ex instanceof CircuitBreakerOpenException
+                ex -> ex instanceof CircuitBreakerOpenException ||
+                        cb.status() == CircuitBreakerStatus.HALF_OPEN
         );
     }
 

@@ -3,7 +3,6 @@ package software.spool.core.model.vo;
 import software.spool.core.adapter.jackson.PayloadDeserializerFactory;
 import software.spool.core.exception.PartitionKeyException;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -41,19 +40,60 @@ public record PartitionKey(String value) {
                     + "::hour=" + String.format("%02d", now.getHour());
 
             List<String> resolved = schema.attributes().stream()
-                    .map(a -> {
-                        if (!entries.containsKey(a))
-                            throw new PartitionKeyException(payload, schema, "PartitionKeySchema does not match with payload");
-                        return a + "=" + entries.get(a);
+                    .map(attribute -> {
+                        Object value = getNestedValue(entries, attribute, payload);
+                        if (value == null) {
+                            throw new PartitionKeyException(
+                                    payload,
+                                    schema,
+                                    "Missing or null value for attribute path: " + attribute
+                            );
+                        }
+                        return attribute + "=" + escapeValue(value);
                     })
                     .toList();
 
-            String base = datePrefix + "::" + "source=" + schema.sourceId();
+            String base = datePrefix + "::source=" + schema.sourceId();
             if (schema.eventType() != Void.class) {
-                base += "::" + schema.eventType();
+                base += "::" + schema.eventType().getSimpleName();
             }
 
             return resolved.isEmpty() ? base : base + "::" + String.join("::", resolved);
+        }
+
+        @SuppressWarnings("unchecked")
+        private Object getNestedValue(Map<String, Object> entries, String path, String payload) {
+            String[] parts = path.split("\\.");
+            Object current = entries;
+
+            for (String part : parts) {
+                if (!(current instanceof Map<?, ?> currentMap)) {
+                    throw new PartitionKeyException(
+                            payload,
+                            schema,
+                            "Invalid attribute path: " + path + ". Segment '" + part + "' is not an object"
+                    );
+                }
+
+                if (!currentMap.containsKey(part)) {
+                    throw new PartitionKeyException(
+                            payload,
+                            schema,
+                            "Missing attribute path: " + path
+                    );
+                }
+
+                current = ((Map<String, Object>) currentMap).get(part);
+            }
+
+            return current;
+        }
+
+        private String escapeValue(Object value) {
+            return String.valueOf(value)
+                    .replace("\\", "\\\\")
+                    .replace("::", "\\:\\:")
+                    .replace("=", "\\=");
         }
     }
 }

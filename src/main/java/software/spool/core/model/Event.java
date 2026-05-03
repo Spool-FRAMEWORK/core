@@ -1,7 +1,5 @@
 package software.spool.core.model;
 
-import software.spool.core.model.event.EventAddress;
-
 import java.time.Instant;
 
 /**
@@ -14,21 +12,10 @@ import java.time.Instant;
  */
 public interface Event {
     String eventId();
-
     String causationId();
-
     String correlationId();
-
     Instant timestamp();
-
     default String eventType() {
         return getClass().getSimpleName();
-    }
-
-    default String address() {
-        EventAddress annotation = this.getClass().getAnnotation(EventAddress.class);
-        return annotation != null
-                ? annotation.value()
-                : eventType();
     }
 }

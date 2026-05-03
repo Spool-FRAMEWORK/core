@@ -1,6 +1,7 @@
 package software.spool.core.model.failure;
 
 import software.spool.core.model.SpoolEvent;
+import software.spool.core.model.SpoolFailedEvent;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -19,7 +20,7 @@ public record SourceItemCaptureFailed(
         Instant timestamp,
         String correlationId,
         String causationId,
-        String errorMessage) implements SpoolEvent {
+        String errorMessage) implements SpoolFailedEvent {
 
     public SourceItemCaptureFailed {
         Objects.requireNonNull(eventId, "eventId is required");

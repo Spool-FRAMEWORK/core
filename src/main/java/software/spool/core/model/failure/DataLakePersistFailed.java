@@ -1,6 +1,7 @@
 package software.spool.core.model.failure;
 
 import software.spool.core.model.SpoolEvent;
+import software.spool.core.model.SpoolFailedEvent;
 import software.spool.core.model.event.SourcePayloadCaptured;
 
 import java.time.Instant;
@@ -19,7 +20,7 @@ public record DataLakePersistFailed(
         Instant timestamp,
         String correlationId,
         String causationId,
-        String errorMessage) implements SpoolEvent {
+        String errorMessage) implements SpoolFailedEvent {
 
     public DataLakePersistFailed {
         Objects.requireNonNull(eventId, "eventId is required");

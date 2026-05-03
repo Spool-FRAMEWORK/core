@@ -1,5 +1,6 @@
 package software.spool.core.model.failure;
 
+import software.spool.core.model.SpoolFailedEvent;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.SpoolEvent;
 import software.spool.core.model.event.ItemPublished;
@@ -19,7 +20,7 @@ public record EnvelopeQuarantined(
         String correlationId,
         Instant timestamp,
         IdempotencyKey idempotencyKey,
-        List<String> violations) implements SpoolEvent {
+        List<String> violations) implements SpoolFailedEvent {
     public EnvelopeQuarantined {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
@@ -28,6 +29,11 @@ public record EnvelopeQuarantined(
 
     public static EnvelopeQuarantined.Builder builder() {
         return new EnvelopeQuarantined.Builder();
+    }
+
+    @Override
+    public String errorMessage() {
+        return "Envelope quarantined: " + violations.toString();
     }
 
     public static class Builder {

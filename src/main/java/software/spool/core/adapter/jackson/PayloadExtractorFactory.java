@@ -13,12 +13,23 @@ public class PayloadExtractorFactory {
 
     public static PayloadExtractor<JsonNode, JsonNode> withRules(List<EnrichmentRule> rules) {
         return payload -> rules.stream()
-                .map(r -> new ExtractedField<>(r.target(), payload.path(r.source())))
+                .map(r -> new ExtractedField<>(r.target(), resolvePath(payload, r.source())))
                 .filter(f -> !f.value().isMissingNode() && !f.value().isNull())
                 .toList();
     }
 
-    public static <P, E> PayloadExtractor<P, E  > noOp() {
+    public static <P, E> PayloadExtractor<P, E> noOp() {
         return payload -> List.of();
+    }
+
+    private static JsonNode resolvePath(JsonNode root, String path) {
+        JsonNode current = root;
+        for (String segment : path.split("\\.")) {
+            current = segment.matches("\\d+")
+                    ? current.path(Integer.parseInt(segment))
+                    : current.path(segment);
+            if (current.isMissingNode()) return current;
+        }
+        return current;
     }
 }

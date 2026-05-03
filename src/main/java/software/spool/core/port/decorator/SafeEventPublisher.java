@@ -23,13 +23,13 @@ public class SafeEventPublisher implements EventPublisher {
     }
 
     @Override
-    public <E extends Event> void publish(Destination destination, BrokerMessage<E> message) throws EventBusEmitException {
+    public <E extends Event> void publish(E event) throws EventBusEmitException {
         try {
-            publisher.publish(destination, message);
+            publisher.publish(event);
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {
-            throw new EventBusEmitException(message.payload(), e.getMessage(), e);
+            throw new EventBusEmitException(event, e.getMessage(), e);
         }
     }
 

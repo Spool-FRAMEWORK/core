@@ -43,6 +43,11 @@ public class SpoolNode {
         modules.forEach(m -> m.start(PERMIT));
     }
 
+    public SpoolNode and(SpoolNode other) {
+        other.modules.forEach(this::register);
+        return this;
+    }
+
     private NodeHealthPayload aggregateHealth() {
         return NodeHealthPayload.of(nodeId, modules.stream()
                 .map(SpoolModule::checkHealth)

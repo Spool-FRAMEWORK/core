@@ -10,7 +10,8 @@ public record Envelope(
         String payload,
         EnvelopeStatus status,
         int retries,
-        Instant capturedAt
+        Instant capturedAt,
+        Instant updatedAt
 ) {
 
     public Envelope withStatus(final EnvelopeStatus status) {
@@ -20,7 +21,8 @@ public record Envelope(
                 this.payload,
                 status,
                 this.retries,
-                this.capturedAt
+                this.capturedAt,
+                Instant.now()
         );
     }
 
@@ -31,7 +33,8 @@ public record Envelope(
                 this.payload,
                 this.status,
                 this.retries + 1,
-                this.capturedAt
+                this.capturedAt,
+                Instant.now()
         );
     }
 }

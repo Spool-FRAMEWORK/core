@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag a publicar (ej: v1.2.3)'
+        description: 'Tag to publish (ex: v1.2.3)'
         required: true
 
 jobs:

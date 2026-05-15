@@ -47,14 +47,6 @@
         </repository>
     </repositories>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>github</id>
-            <name>Spool-FRAMEWORK GitHub Packages</name>
-            <url>https://maven.pkg.github.com/Spool-FRAMEWORK/core</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <build>
         <plugins>
             <plugin>

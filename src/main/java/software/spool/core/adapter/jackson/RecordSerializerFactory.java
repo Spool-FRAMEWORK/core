@@ -30,7 +30,7 @@ public class RecordSerializerFactory {
     public static RecordSerializer<JsonNode> jsonNode() {
         return node -> {
             try {
-                return mapper.writeValueAsString(node);
+                return mapper.writeValueAsBytes(node);
             } catch (Exception e) {
                 throw new SerializationException(node.toString(), e);
             }
@@ -47,7 +47,7 @@ public class RecordSerializerFactory {
     public static <T> RecordSerializer<T> record() {
         return value -> {
             try {
-                return mapper.writeValueAsString(value);
+                return mapper.writeValueAsBytes(value);
             } catch (Exception e) {
                 throw new SerializationException(value.toString(), e);
             }
@@ -63,7 +63,7 @@ public class RecordSerializerFactory {
     public static RecordSerializer<Map<String, Object>> map() {
         return map -> {
             try {
-                return mapper.writeValueAsString(map);
+                return mapper.writeValueAsBytes(map);
             } catch (Exception e) {
                 throw new SerializationException(map.toString(), e);
             }

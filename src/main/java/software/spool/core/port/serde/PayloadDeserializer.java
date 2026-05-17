@@ -22,5 +22,5 @@ public interface PayloadDeserializer<P> {
      * @return the deserialized representation; must not be {@code null}
      * @throws DeserializationException if the value cannot be parsed or converted
      */
-    P deserialize(String payload) throws DeserializationException;
+    P deserialize(byte[] payload) throws DeserializationException;
 }

@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public final class PayloadDeserializerFactory {
-    @SuppressWarnings("unchecked")
     public static <P> PayloadDeserializer<P> noOp() {
         return payload -> (P) payload;
     }
@@ -27,12 +26,12 @@ public final class PayloadDeserializerFactory {
     public static PayloadDeserializer<List<String>> textLines() {
         return raw -> {
             try {
-                return Stream.of(raw.split("\n"))
+                return Stream.of(new String(raw).split("\n"))
                         .map(String::trim)
                         .filter(line -> !line.isEmpty())
                         .toList();
             } catch (Exception e) {
-                throw new DeserializationException(raw, e.getMessage());
+                throw new DeserializationException(new String(raw), e.getMessage());
             }
         };
     }
@@ -40,8 +39,9 @@ public final class PayloadDeserializerFactory {
     public static PayloadDeserializer<List<Map<String, String>>> csv() {
         return raw -> {
             try {
-                String[] headers = raw.split("\n")[0].split(",");
-                return Stream.of(raw.split("\n"))
+                String rawString = new String(raw);
+                String[] headers = rawString.split("\n")[0].split(",");
+                return Stream.of(rawString.split("\n"))
                         .skip(1)
                         .map(line -> {
                             String[] values = line.split(",");
@@ -52,7 +52,7 @@ public final class PayloadDeserializerFactory {
                         })
                         .toList();
             } catch (Exception e) {
-                throw new DeserializationException(raw, e.getMessage());
+                throw new DeserializationException(new String(raw), e.getMessage());
             }
         };
     }

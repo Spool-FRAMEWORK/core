@@ -15,11 +15,11 @@ import software.spool.core.exception.SerializationException;
  */
 public interface RecordSerializer<R> {
     /**
-     * Converts the given record into a {@code String} payload.
+     * Converts the given record into a {@code byte[]} payload.
      *
      * @param record the record to serialize; must not be {@code null}
      * @return the serialized string representation; must not be {@code null}
      * @throws SerializationException if the record cannot be serialized
      */
-    String serialize(R record) throws SerializationException;
+    byte[] serialize(R record) throws SerializationException;
 }

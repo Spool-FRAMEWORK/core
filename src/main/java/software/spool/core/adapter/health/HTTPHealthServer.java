@@ -58,20 +58,19 @@ public class HTTPHealthServer implements HealthServer {
 
     private void handle(HttpExchange exchange) throws IOException {
         if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
-            respond(exchange, 405, "{\"error\":\"Method Not Allowed\"}");
+            respond(exchange, 405, "{\"error\":\"Method Not Allowed\"}".getBytes(StandardCharsets.UTF_8));
             return;
         }
         NodeHealthPayload payload = payloadSupplier.get();
         respond(exchange, payload.status().httpCode(), RecordSerializerFactory.record().serialize(payload));
     }
 
-    private void respond(HttpExchange exchange, int code, String payload) throws IOException {
-        byte[] bytes = payload.getBytes(StandardCharsets.UTF_8);
+    private void respond(HttpExchange exchange, int code, byte[] payload) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", "application/json");
         exchange.getResponseHeaders().set("Cache-Control", "no-cache");
-        exchange.sendResponseHeaders(code, bytes.length);
+        exchange.sendResponseHeaders(code, payload.length);
         try (OutputStream os = exchange.getResponseBody()) {
-            os.write(bytes);
+            os.write(payload);
         }
     }
 }

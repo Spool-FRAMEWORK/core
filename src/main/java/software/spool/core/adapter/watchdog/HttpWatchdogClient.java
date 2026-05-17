@@ -12,6 +12,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collection;
 
@@ -28,13 +29,13 @@ public class HttpWatchdogClient implements WatchdogClient {
 
     @Override
     public void beat(ModuleIdentity identity, ModuleStatus status) {
-        String body = RecordSerializerFactory.record()
+        byte[] body = RecordSerializerFactory.record()
                 .serialize(new HeartbeatPayload(identity, status));
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/heartbeat"))
                 .header("Content-Type", "application/json")
                 .timeout(Duration.ofSeconds(5))
-                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .POST(HttpRequest.BodyPublishers.ofByteArray(body))
                 .build();
         send(request,  HttpResponse.BodyHandlers.ofString());
     }
@@ -54,7 +55,7 @@ public class HttpWatchdogClient implements WatchdogClient {
         }
         return PayloadDeserializerFactory.json()
                 .asList(ModuleState.class)
-                .deserialize(response.body());
+                .deserialize(response.body().getBytes(StandardCharsets.UTF_8));
     }
 
     private <T> HttpResponse<T> send(HttpRequest request, HttpResponse.BodyHandler<T> handler) {

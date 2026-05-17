@@ -26,11 +26,11 @@ public record PartitionKey(String value) {
             this.schema = schema;
         }
 
-        public PartitionKey from(final String payload) throws PartitionKeyException {
+        public PartitionKey from(final byte[] payload) throws PartitionKeyException {
             return new PartitionKey(validateAndBuild(payload));
         }
 
-        private String validateAndBuild(String payload) {
+        private String validateAndBuild(byte[] payload) {
             Map<String, Object> entries = PayloadDeserializerFactory.json().asMap().deserialize(payload);
 
             OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
@@ -44,7 +44,7 @@ public record PartitionKey(String value) {
                         Object value = getNestedValue(entries, attribute, payload);
                         if (value == null) {
                             throw new PartitionKeyException(
-                                    payload,
+                                    new String(payload),
                                     schema,
                                     "Missing or null value for attribute path: " + attribute
                             );
@@ -62,14 +62,14 @@ public record PartitionKey(String value) {
         }
 
         @SuppressWarnings("unchecked")
-        private Object getNestedValue(Map<String, Object> entries, String path, String payload) {
+        private Object getNestedValue(Map<String, Object> entries, String path, byte[] payload) {
             String[] parts = path.split("\\.");
             Object current = entries;
 
             for (String part : parts) {
                 if (!(current instanceof Map<?, ?> currentMap)) {
                     throw new PartitionKeyException(
-                            payload,
+                            new String(payload),
                             schema,
                             "Invalid attribute path: " + path + ". Segment '" + part + "' is not an object"
                     );
@@ -77,7 +77,7 @@ public record PartitionKey(String value) {
 
                 if (!currentMap.containsKey(part)) {
                     throw new PartitionKeyException(
-                            payload,
+                            new String(payload),
                             schema,
                             "Missing attribute path: " + path
                     );

@@ -79,7 +79,7 @@ public record ItemPublished(
             return this;
         }
 
-        public Builder addMetadata(EventMetadataKey metadataKey, byte[] value) {
+        public Builder addMetadata(EventMetadataKey metadataKey, String value) {
             metadata.set(metadataKey, value);
             return this;
         }

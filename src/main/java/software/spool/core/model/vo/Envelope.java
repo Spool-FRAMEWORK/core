@@ -8,7 +8,7 @@ public record Envelope(
         IdempotencyKey idempotencyKey,
         EventMetadata metadata,
         MediaType mediaType,
-        String payload,
+        byte[] payload,
         EnvelopeStatus status,
         int retries,
         Instant capturedAt,

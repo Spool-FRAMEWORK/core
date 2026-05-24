@@ -37,6 +37,10 @@ public class RecordSerializerFactory {
         };
     }
 
+    public static RecordSerializer<byte[]> noOp() {
+        return p -> p;
+    }
+
     /**
      * Returns a generic serializer that writes any object to a compact JSON string
      * using Jackson's default mapping.

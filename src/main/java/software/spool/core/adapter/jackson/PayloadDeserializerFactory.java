@@ -1,5 +1,6 @@
 package software.spool.core.adapter.jackson;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import software.spool.core.exception.DeserializationException;
 import software.spool.core.port.serde.PayloadDeserializer;
 import software.spool.core.spi.SerdeRegistry;
@@ -21,6 +22,10 @@ public final class PayloadDeserializerFactory {
 
     public static StructuredPayloadDeserializerBuilder yaml() {
         return SerdeRegistry.structured("YAML").builder();
+    }
+
+    public static PayloadDeserializer<JsonNode> fromObject() {
+        return ObjectToJsonNodeMapper::map;
     }
 
     public static PayloadDeserializer<List<String>> textLines() {

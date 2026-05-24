@@ -24,10 +24,6 @@ public final class PayloadDeserializerFactory {
         return SerdeRegistry.structured("YAML").builder();
     }
 
-    public static PayloadDeserializer<JsonNode> fromObject() {
-        return ObjectToJsonNodeMapper::map;
-    }
-
     public static PayloadDeserializer<List<String>> textLines() {
         return raw -> {
             try {

@@ -53,4 +53,8 @@ public record IdempotencyKey(String value) {
             throw new IllegalStateException("SHA-256 not available", e);
         }
     }
+
+    public static IdempotencyKey of(String sourceId, byte[] payload) throws IllegalStateException {
+        return of(sourceId, new String(payload, StandardCharsets.UTF_8));
+    }
 }

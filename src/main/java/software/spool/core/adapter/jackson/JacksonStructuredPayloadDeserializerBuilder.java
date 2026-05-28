@@ -1,6 +1,5 @@
 package software.spool.core.adapter.jackson;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import software.spool.core.exception.DeserializationException;
@@ -36,8 +35,8 @@ public final class JacksonStructuredPayloadDeserializerBuilder implements Struct
         return raw -> {
             try {
                 return mapper.readValue(raw, type);
-            } catch (JsonProcessingException e) {
-                throw new DeserializationException(raw, e.getMessage());
+            } catch (Exception e) {
+                throw new DeserializationException(new String(raw), e.getMessage());
             }
         };
     }
@@ -48,8 +47,8 @@ public final class JacksonStructuredPayloadDeserializerBuilder implements Struct
                 JavaType listType = mapper.getTypeFactory()
                         .constructCollectionType(List.class, type);
                 return mapper.readValue(raw, listType);
-            } catch (JsonProcessingException e) {
-                throw new DeserializationException(raw, e.getMessage());
+            } catch (Exception e) {
+                throw new DeserializationException(new String(raw), e.getMessage());
             }
         };
     }
@@ -59,7 +58,7 @@ public final class JacksonStructuredPayloadDeserializerBuilder implements Struct
             try {
                 return mapper.readTree(raw);
             } catch (Exception e) {
-                throw new DeserializationException(raw, e.getMessage());
+                throw new DeserializationException(new String(raw), e.getMessage());
             }
         };
     }
@@ -69,7 +68,7 @@ public final class JacksonStructuredPayloadDeserializerBuilder implements Struct
             try {
                 return mapper.readValue(raw, new TypeReference<>() {});
             } catch (Exception e) {
-                throw new DeserializationException(raw, e.getMessage());
+                throw new DeserializationException(new String(raw), e.getMessage());
             }
         };
     }

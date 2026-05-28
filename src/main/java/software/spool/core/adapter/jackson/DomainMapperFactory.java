@@ -1,6 +1,5 @@
 package software.spool.core.adapter.jackson;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import software.spool.core.exception.DeserializationException;
@@ -29,8 +28,8 @@ public final class DomainMapperFactory {
         return raw -> {
             try {
                 return CAMEL.readValue(raw, type);
-            } catch (JsonProcessingException e) {
-                throw new DeserializationException(raw, e);
+            } catch (Exception e) {
+                throw new DeserializationException(new String(raw), e);
             }
         };
     }
@@ -39,8 +38,8 @@ public final class DomainMapperFactory {
         return raw -> {
             try {
                 return SNAKE.readValue(raw, type);
-            } catch (JsonProcessingException e) {
-                throw new DeserializationException(raw, e);
+            } catch (Exception e) {
+                throw new DeserializationException(new String(raw), e);
             }
         };
     }
@@ -49,8 +48,8 @@ public final class DomainMapperFactory {
         return raw -> {
             try {
                 return PASCAL.readValue(raw, type);
-            } catch (JsonProcessingException e) {
-                throw new DeserializationException(raw, e);
+            } catch (Exception e) {
+                throw new DeserializationException(new String(raw), e);
             }
         };
     }
@@ -59,8 +58,8 @@ public final class DomainMapperFactory {
         return raw -> {
             try {
                 return KEBAB.readValue(raw, type);
-            } catch (JsonProcessingException e) {
-                throw new DeserializationException(raw, e);
+            } catch (Exception e) {
+                throw new DeserializationException(new String(raw), e);
             }
         };
     }

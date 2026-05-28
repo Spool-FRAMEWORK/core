@@ -2,7 +2,7 @@ package software.spool.core.adapter.otel;
 
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
-import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;  // ← HTTP, no gRPC
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -19,16 +19,32 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class OTELConfig {
-
     private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
 
     public static void init(String serviceName) {
+        init(serviceName, null, null, null);
+    }
+
+    public static void init(String serviceName,
+                            String tracesEndpointOverride,
+                            String logsEndpointOverride,
+                            String metricsEndpointOverride) {
         if (!INITIALIZED.compareAndSet(false, true)) return;
 
         String name = resolveEnv("SERVICE_NAME", serviceName);
-        String tracesEp = resolveEnv("OTEL_TRACES_ENDPOINT", "http://localhost:4318/v1/traces");
-        String logsEp = resolveEnv("OTEL_LOGS_ENDPOINT",   "http://localhost:3100/otlp/v1/logs");
-        String metricsEp = resolveEnv("OTEL_METRICS_ENDPOINT", "http://localhost:4320/v1/metrics");
+
+        String tracesEp = firstNonBlank(
+                tracesEndpointOverride,
+                resolveEnv("OTEL_TRACES_ENDPOINT", "http://localhost:4318/v1/traces")
+        );
+        String logsEp = firstNonBlank(
+                logsEndpointOverride,
+                resolveEnv("OTEL_LOGS_ENDPOINT", "http://localhost:3100/otlp/v1/logs")
+        );
+        String metricsEp = firstNonBlank(
+                metricsEndpointOverride,
+                resolveEnv("OTEL_METRICS_ENDPOINT", "http://localhost:4320/v1/metrics")
+        );
 
         Resource resource = Resource.getDefault().toBuilder()
                 .put(ServiceAttributes.SERVICE_NAME, name)
@@ -52,9 +68,9 @@ public class OTELConfig {
         SdkMeterProvider meterProvider = SdkMeterProvider.builder()
                 .setResource(resource)
                 .registerMetricReader(PeriodicMetricReader.builder(
-                        OtlpHttpMetricExporter.builder()
-                                .setEndpoint(metricsEp)
-                                .build())
+                                OtlpHttpMetricExporter.builder()
+                                        .setEndpoint(metricsEp)
+                                        .build())
                         .setInterval(Duration.ofSeconds(10))
                         .build())
                 .build();
@@ -85,5 +101,10 @@ public class OTELConfig {
     private static String resolveEnv(String key, String fallback) {
         String v = System.getenv(key);
         return (v != null && !v.isBlank()) ? v : fallback;
+    }
+
+    private static String firstNonBlank(String primary, String fallback) {
+        if (primary != null && !primary.isBlank()) return primary;
+        return fallback;
     }
 }

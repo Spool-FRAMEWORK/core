@@ -7,7 +7,8 @@ import java.time.Instant;
 public record Envelope(
         IdempotencyKey idempotencyKey,
         EventMetadata metadata,
-        String payload,
+        MediaType mediaType,
+        byte[] payload,
         EnvelopeStatus status,
         int retries,
         Instant capturedAt,
@@ -18,6 +19,7 @@ public record Envelope(
         return new Envelope(
                 this.idempotencyKey,
                 this.metadata,
+                this.mediaType,
                 this.payload,
                 status,
                 this.retries,
@@ -30,6 +32,7 @@ public record Envelope(
         return new Envelope(
                 this.idempotencyKey,
                 this.metadata,
+                this.mediaType,
                 this.payload,
                 this.status,
                 this.retries + 1,

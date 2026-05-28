@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Set;
 
 public record EventMetadata(Map<EventMetadataKey, String> metadata) {
-
     public EventMetadata() {
         this(new HashMap<>());
     }
@@ -14,8 +13,13 @@ public record EventMetadata(Map<EventMetadataKey, String> metadata) {
         return metadata.get(key);
     }
 
+    public EventMetadata set(final EventMetadataKey key, final byte[] value) {
+        set(key, new String(value));
+        return this;
+    }
+
     public EventMetadata set(final EventMetadataKey key, final String value) {
-        metadata.put(key, value);
+        this.metadata.put(key, value);
         return this;
     }
 

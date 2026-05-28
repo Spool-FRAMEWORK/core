@@ -38,7 +38,7 @@ public final class DomainEventMapping<D> {
         return new DomainEventMapping<>(deserializer, toEvent);
     }
 
-    public Event resolve(String payload, IdempotencyKey key) {
+    public Event resolve(byte[] payload, IdempotencyKey key) {
         D dto = deserializer.deserialize(payload);
         return toEvent.apply(dto, key);
     }

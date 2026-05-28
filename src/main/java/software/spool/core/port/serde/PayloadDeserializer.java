@@ -23,4 +23,8 @@ public interface PayloadDeserializer<P> {
      * @throws DeserializationException if the value cannot be parsed or converted
      */
     P deserialize(byte[] payload) throws DeserializationException;
+
+    default P deserialize(String payload) throws DeserializationException {
+        return deserialize(payload.getBytes());
+    }
 }

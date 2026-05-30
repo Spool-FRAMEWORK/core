@@ -55,7 +55,7 @@ public record PartitionKey(String value) {
 
             String base = datePrefix + "::source=" + schema.sourceId();
             if (schema.eventType() != Void.class) {
-                base += "::" + schema.eventType().getSimpleName();
+                base += "::eventType=" + schema.eventType().getSimpleName();
             }
 
             return resolved.isEmpty() ? base : base + "::" + String.join("::", resolved);

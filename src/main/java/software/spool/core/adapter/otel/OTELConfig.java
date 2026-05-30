@@ -50,52 +50,44 @@ public class OTELConfig {
                 .put(ServiceAttributes.SERVICE_NAME, name)
                 .build();
 
-        SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
-                .setResource(resource)
-                .setIdGenerator(OTELIdGenerator.INSTANCE)
-                .addSpanProcessor(BatchSpanProcessor.builder(
-                        OtlpHttpSpanExporter.builder().setEndpoint(tracesEp).build()
-                ).build())
+        OtlpHttpSpanExporter spanExporter = OtlpHttpSpanExporter.builder()
+                .setEndpoint(tracesEp)
                 .build();
 
-        SdkLoggerProvider loggerProvider = SdkLoggerProvider.builder()
-                .setResource(resource)
-                .addLogRecordProcessor(BatchLogRecordProcessor.builder(
-                        OtlpHttpLogRecordExporter.builder().setEndpoint(logsEp).build()
-                ).build())
+        OtlpHttpLogRecordExporter logExporter = OtlpHttpLogRecordExporter.builder()
+                .setEndpoint(logsEp)
                 .build();
 
-        SdkMeterProvider meterProvider = SdkMeterProvider.builder()
-                .setResource(resource)
-                .registerMetricReader(PeriodicMetricReader.builder(
-                                OtlpHttpMetricExporter.builder()
-                                        .setEndpoint(metricsEp)
-                                        .build())
-                        .setInterval(Duration.ofSeconds(10))
+        OtlpHttpMetricExporter metricExporter = OtlpHttpMetricExporter.builder()
+                .setEndpoint(metricsEp)
+                .build();
+
+        OpenTelemetrySdk sdk = OpenTelemetrySdk.builder()
+                .setTracerProvider(SdkTracerProvider.builder()
+                        .setResource(resource)
+                        .setIdGenerator(OTELIdGenerator.INSTANCE)
+                        .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
                         .build())
-                .build();
+                .setLoggerProvider(SdkLoggerProvider.builder()
+                        .setResource(resource)
+                        .addLogRecordProcessor(BatchLogRecordProcessor.builder(logExporter).build())
+                        .build())
+                .setMeterProvider(SdkMeterProvider.builder()
+                        .setResource(resource)
+                        .registerMetricReader(PeriodicMetricReader.builder(metricExporter)
+                                .setInterval(Duration.ofSeconds(10))
+                                .build())
+                        .build())
+                .buildAndRegisterGlobal();
 
-        try {
-            OpenTelemetrySdk sdk = OpenTelemetrySdk.builder()
-                    .setTracerProvider(tracerProvider)
-                    .setLoggerProvider(loggerProvider)
-                    .setMeterProvider(meterProvider)
-                    .buildAndRegisterGlobal();
+        OpenTelemetryAppender.install(sdk);
 
-            OpenTelemetryAppender.install(sdk);
-
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                sdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
-                sdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
-                sdk.getSdkMeterProvider().forceFlush().join(10, TimeUnit.SECONDS);
-                sdk.close();
-            }, "otel-shutdown"));
-        } catch (IllegalStateException e) {
-            System.err.println("WARN: OpenTelemetry could not be registered globally (" + e.getMessage() + ").");
-            tracerProvider.close();
-            loggerProvider.close();
-            meterProvider.close();
-        }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            sdk.getSdkLoggerProvider().forceFlush().join(10, TimeUnit.SECONDS);
+            sdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
+            sdk.getSdkMeterProvider().forceFlush().join(10, TimeUnit.SECONDS);
+            sdk.close();
+        }, "otel-shutdown"));
     }
 
     private static String resolveEnv(String key, String fallback) {

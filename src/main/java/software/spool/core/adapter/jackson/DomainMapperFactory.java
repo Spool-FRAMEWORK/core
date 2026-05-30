@@ -16,12 +16,12 @@ import software.spool.core.port.serde.PayloadDeserializer;
  * </p>
  */
 public final class DomainMapperFactory {
-    private static final ObjectMapper CAMEL = new ObjectMapper().findAndRegisterModules();
-    private static final ObjectMapper SNAKE = new ObjectMapper().findAndRegisterModules()
+    private static final ObjectMapper CAMEL = JacksonMapperFactory.json().copy();
+    private static final ObjectMapper SNAKE = JacksonMapperFactory.json().copy()
             .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-    private static final ObjectMapper PASCAL = new ObjectMapper().findAndRegisterModules()
+    private static final ObjectMapper PASCAL = JacksonMapperFactory.json().copy()
             .setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
-    private static final ObjectMapper KEBAB = new ObjectMapper().findAndRegisterModules()
+    private static final ObjectMapper KEBAB = JacksonMapperFactory.json().copy()
             .setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 
     public static <D> PayloadDeserializer<D> camelCase(Class<D> type) {

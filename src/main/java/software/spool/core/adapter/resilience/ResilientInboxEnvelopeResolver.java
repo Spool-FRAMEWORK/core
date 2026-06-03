@@ -1,0 +1,85 @@
+package software.spool.core.adapter.resilience;
+
+import software.spool.core.adapter.logging.LoggerFactory;
+import software.spool.core.exception.InboxReadException;
+import software.spool.core.model.vo.Envelope;
+import software.spool.core.model.vo.IdempotencyKey;
+import software.spool.core.port.inbox.InboxEnvelopeResolver;
+import software.spool.core.port.logging.Logger;
+import software.spool.core.resilience.CircuitBreaker;
+import software.spool.core.resilience.adapter.InMemoryCircuitBreakerStateStore;
+import software.spool.core.resilience.control.RetryingExecutor;
+import software.spool.core.resilience.control.TransitionEvaluator;
+import software.spool.core.resilience.exception.CircuitBreakerOpenException;
+import software.spool.core.resilience.model.CircuitBreakerPolicy;
+import software.spool.core.resilience.model.CircuitBreakerStatus;
+import software.spool.core.resilience.model.RetryPolicy;
+
+import java.time.Duration;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+
+public class ResilientInboxEnvelopeResolver implements InboxEnvelopeResolver {
+    private static final Logger LOG = LoggerFactory.getLogger(ResilientInboxEnvelopeResolver.class);
+    private final InboxEnvelopeResolver delegate;
+    private final CircuitBreaker cb;
+    private final RetryPolicy retryPolicy;
+
+    public ResilientInboxEnvelopeResolver(InboxEnvelopeResolver delegate, CircuitBreaker cb, RetryPolicy retryPolicy) {
+        this.delegate = delegate;
+        this.cb = cb;
+        this.retryPolicy = retryPolicy;
+    }
+
+    public static ResilientInboxEnvelopeResolver of(InboxEnvelopeResolver delegate) {
+        CircuitBreaker cb = buildCircuitBreaker();
+        RetryPolicy retryPolicy = RetryPolicy.fixedWithAbort(
+                3,
+                Duration.ofMillis(500),
+                ex -> ex instanceof CircuitBreakerOpenException ||
+                        cb.status() == CircuitBreakerStatus.HALF_OPEN
+        );
+        return new ResilientInboxEnvelopeResolver(delegate, cb, retryPolicy);
+    }
+
+    @Override
+    public Optional<Envelope> findById(IdempotencyKey idempotencyKey) throws InboxReadException {
+        return execute(() -> delegate.findById(idempotencyKey), idempotencyKey.value());
+    }
+
+    @Override
+    public Collection<Envelope> findByIds(Collection<IdempotencyKey> idempotencyKeys) throws InboxReadException {
+        return execute(() -> delegate.findByIds(idempotencyKeys), idempotencyKeys.toString());
+    }
+
+    private <T> T execute(Callable<T> action, String context) {
+        try {
+            return new RetryingExecutor<>(retryPolicy, () -> cb.execute(action)).execute();
+        } catch (CircuitBreakerOpenException ex) {
+            LOG.warn("RESILIENCE - InboxEnvelopeResolver · {} » circuit OPEN, rejecting read [{}]",
+                    cb.id(), context);
+            throw new InboxReadException("Circuit breaker is OPEN: " + context, ex);
+        } catch (InboxReadException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new InboxReadException(ex.getMessage(), ex);
+        }
+    }
+
+    private static CircuitBreaker buildCircuitBreaker() {
+        CircuitBreakerPolicy policy = CircuitBreakerPolicy.countBased()
+                .withFailureRateThreshold(0.50f)
+                .withMinimumCalls(4)
+                .withSlidingWindowSize(10)
+                .withCooldown(Duration.ofSeconds(30))
+                .withHalfOpenPermits(4)
+                .build();
+        return new CircuitBreaker(
+                "inbox-envelope-resolver",
+                policy,
+                new TransitionEvaluator(),
+                InMemoryCircuitBreakerStateStore.instance()
+        );
+    }
+}

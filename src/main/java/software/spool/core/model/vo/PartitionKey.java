@@ -12,7 +12,11 @@ public record PartitionKey(String value) {
     }
 
     public static ManualPartitionKeyBuilder ofEntries() {
-        return new ManualPartitionKeyBuilder();
+        return new ManualPartitionKeyBuilder(true);
+    }
+
+    public static ManualPartitionKeyBuilder ofEntriesWithoutDate() {
+        return new ManualPartitionKeyBuilder(false);
     }
 
     public static AutomaticBuilder of(PartitionKeySchema schema) {

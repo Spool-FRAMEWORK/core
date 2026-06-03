@@ -6,8 +6,11 @@ import java.util.stream.Collectors;
 
 public class ManualPartitionKeyBuilder {
     private final Map<String, Object> entries = new LinkedHashMap<>();
+    private final boolean withDate;
 
-    ManualPartitionKeyBuilder() {}
+    ManualPartitionKeyBuilder(boolean withDate) {
+        this.withDate = withDate;
+    }
 
     public ManualPartitionKeyBuilder with(String key, Object value) {
         entries.put(key, value);
@@ -15,11 +18,13 @@ public class ManualPartitionKeyBuilder {
     }
 
     public PartitionKey build() {
-        String base = PartitionKeyBuilderUtils.datePrefix();
-        if (entries.isEmpty()) return new PartitionKey(base);
         String parts = entries.entrySet().stream()
                 .map(e -> e.getKey() + "=" + PartitionKeyBuilderUtils.escapeValue(e.getValue()))
                 .collect(Collectors.joining("::"));
-        return new PartitionKey(base + "::" + parts);
+
+        if (!withDate) return new PartitionKey(parts.isEmpty() ? "" : parts);
+
+        String base = PartitionKeyBuilderUtils.datePrefix();
+        return new PartitionKey(parts.isEmpty() ? base : base + "::" + parts);
     }
 }

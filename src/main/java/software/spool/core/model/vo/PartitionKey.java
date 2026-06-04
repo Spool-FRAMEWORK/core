@@ -1,5 +1,6 @@
 package software.spool.core.model.vo;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public record PartitionKey(String value) {
@@ -21,5 +22,10 @@ public record PartitionKey(String value) {
 
     public static AutomaticBuilder of(PartitionKeySchema schema) {
         return new AutomaticBuilder(schema);
+    }
+
+    public boolean contains(PartitionKey scope) {
+        return Arrays.stream(scope.value().split("::"))
+                     .allMatch(pair -> this.value().contains(pair));
     }
 }

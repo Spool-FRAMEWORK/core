@@ -20,4 +20,17 @@ public record ModuleHealthPayload(
     public static ModuleHealthPayload unhealthy(String moduleId, List<HealthCheck> checks) {
         return new ModuleHealthPayload(moduleId, HealthStatus.UNHEALTHY, checks, Instant.now());
     }
+
+    public static ModuleHealthPayload of(String moduleId, List<HealthCheck> checks) {
+        HealthStatus worst = checks.stream()
+                .map(HealthCheck::status)
+                .reduce(HealthStatus.HEALTHY, ModuleHealthPayload::worst);
+        return new ModuleHealthPayload(moduleId, worst, checks, Instant.now());
+    }
+
+    private static HealthStatus worst(HealthStatus a, HealthStatus b) {
+        if (a == HealthStatus.UNHEALTHY || b == HealthStatus.UNHEALTHY) return HealthStatus.UNHEALTHY;
+        if (a == HealthStatus.DEGRADED  || b == HealthStatus.DEGRADED)  return HealthStatus.DEGRADED;
+        return HealthStatus.HEALTHY;
+    }
 }

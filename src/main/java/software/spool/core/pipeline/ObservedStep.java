@@ -18,12 +18,12 @@ public class ObservedStep<I, O> implements Step<I, O> {
     @Override
     public O apply(I input) throws AttributeNotFoundException {
         try {
-            return delegate.apply(input);
+            O result = delegate.apply(input);
+            LOGGER.info("Step '" + name + "' finished");
+            return result;
         } catch (Exception e) {
-            LOGGER.error("Step failed: " + name);
+            LOGGER.error("Step '" + name + "' failed", e);
             throw e;
-        } finally {
-            LOGGER.info("Step " + "'" + name + "'" + " finished");
         }
     }
 }

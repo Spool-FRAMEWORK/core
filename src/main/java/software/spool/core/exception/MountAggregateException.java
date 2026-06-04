@@ -7,4 +7,8 @@ public class MountAggregateException extends SpoolException {
     public MountAggregateException(String message) {
         super("Error occurred while aggregating: " + message);
     }
+
+    public MountAggregateException(String message, Throwable cause) {
+        super("Error occurred while aggregating: " + message, cause);
+    }
 }

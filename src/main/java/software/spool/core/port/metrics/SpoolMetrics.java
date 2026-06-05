@@ -64,6 +64,21 @@ public final class SpoolMetrics {
         public static final String STOPPED_TOTAL_DESC = "Stopped modules";
         public static final String DEGRADED_TOTAL = "spool.module.degraded.total";
         public static final String DEGRADED_TOTAL_DESC = "Degraded modules";
+        public static final String ACTIVE = "spool.module.active";
+        public static final String ACTIVE_DESC = "Currently running modules";
+    }
+
+    public static final class Watchdog {
+        private Watchdog() {}
+
+        public static final String HEARTBEATS_TOTAL      = "spool.watchdog.heartbeats.total";
+        public static final String HEARTBEATS_TOTAL_DESC = "Heartbeats received from modules";
+        public static final String TIMEOUTS_TOTAL        = "spool.watchdog.timeouts.total";
+        public static final String TIMEOUTS_TOTAL_DESC   = "Modules that missed their heartbeat deadline";
+        public static final String ZOMBIES_TOTAL         = "spool.watchdog.zombies.total";
+        public static final String ZOMBIES_TOTAL_DESC    = "Zombie modules removed from registry";
+        public static final String CHECK_DURATION        = "spool.watchdog.check.duration";
+        public static final String CHECK_DURATION_DESC   = "Duration of each monitoring check cycle";
     }
 
     public static final class Attributes {

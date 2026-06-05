@@ -6,6 +6,7 @@ public interface MetricsRegistry {
     CounterMetric counter(String name, String description, String unit);
     LongHistogramMetric histogram(String name, String description, String unit);
     TimerMetric timer(String name, String description, String unit);
+    GaugeMetric gauge(String name, String description, String unit);
 
     interface CounterMetric {
         void add(long value, Map<String, String> attributes);
@@ -16,6 +17,12 @@ public interface MetricsRegistry {
 
     interface LongHistogramMetric {
         void record(long value, Map<String, String> attributes);
+    }
+
+    interface GaugeMetric {
+        void add(long delta, Map<String, String> attributes);
+        default void increment(Map<String, String> attributes) { add(1, attributes); }
+        default void decrement(Map<String, String> attributes) { add(-1, attributes); }
     }
 
     interface TimerMetric {
@@ -37,6 +44,7 @@ public interface MetricsRegistry {
     MetricsRegistry NOOP = new MetricsRegistry() {
         public CounterMetric counter(String name, String description, String unit) { return (v, a) -> {}; }
         public LongHistogramMetric histogram(String name, String description, String unit) { return (v, a) -> {}; }
+        public GaugeMetric gauge(String name, String description, String unit) { return (d, a) -> {}; }
         public TimerMetric timer(String name, String description, String unit) {
             return new TimerMetric() {
                 public void record(long durationMs, Map<String, String> attributes) {}

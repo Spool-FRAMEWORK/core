@@ -44,6 +44,18 @@ public class Tracked<T> implements HealthProbe {
         }
     }
 
+    public T get() {
+        return component;
+    }
+
+    public void recordSuccess() {
+        current = HealthCheck.healthy(name);
+    }
+
+    public void recordFailure(String reason) {
+        current = HealthCheck.unhealthy(name, reason);
+    }
+
     @Override
     public HealthCheck probe() {
         return current;

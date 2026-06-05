@@ -25,6 +25,7 @@ public class SpoolNode {
     private final MetricsRegistry.CounterMetric moduleStarted;
     private final MetricsRegistry.CounterMetric moduleStopped;
     private final MetricsRegistry.CounterMetric moduleDegraded;
+    private final MetricsRegistry.GaugeMetric moduleActive;
 
     public static final class StartPermit {
         private StartPermit() {}
@@ -35,9 +36,10 @@ public class SpoolNode {
     private SpoolNode(int healthPort, String nodeId, MetricsRegistry metricsRegistry) {
         this.healthServer = new HTTPHealthServer(healthPort, this::aggregateHealth);
         this.nodeId = nodeId;
-        this.moduleStarted = metricsRegistry.counter(SpoolMetrics.Module.STARTED_TOTAL, SpoolMetrics.Module.STARTED_TOTAL_DESC, "events");
-        this.moduleStopped = metricsRegistry.counter(SpoolMetrics.Module.STOPPED_TOTAL, SpoolMetrics.Module.STOPPED_TOTAL_DESC, "events");
+        this.moduleStarted  = metricsRegistry.counter(SpoolMetrics.Module.STARTED_TOTAL,  SpoolMetrics.Module.STARTED_TOTAL_DESC,  "events");
+        this.moduleStopped  = metricsRegistry.counter(SpoolMetrics.Module.STOPPED_TOTAL,  SpoolMetrics.Module.STOPPED_TOTAL_DESC,  "events");
         this.moduleDegraded = metricsRegistry.counter(SpoolMetrics.Module.DEGRADED_TOTAL, SpoolMetrics.Module.DEGRADED_TOTAL_DESC, "events");
+        this.moduleActive   = metricsRegistry.gauge(SpoolMetrics.Module.ACTIVE,           SpoolMetrics.Module.ACTIVE_DESC,          "modules");
     }
 
     public static SpoolNode create() {
@@ -66,14 +68,18 @@ public class SpoolNode {
         healthServer.start();
         modules.forEach(m -> {
             m.start(PERMIT);
-            moduleStarted.increment(Map.of(SpoolMetrics.Attributes.MODULE, moduleIds.get(m)));
+            String moduleId = moduleIds.get(m);
+            moduleStarted.increment(Map.of(SpoolMetrics.Attributes.MODULE, moduleId));
+            moduleActive.increment(Map.of(SpoolMetrics.Attributes.MODULE, moduleId));
         });
     }
 
     public void stop() {
         modules.forEach(m -> {
             m.stop(PERMIT);
-            moduleStopped.increment(Map.of(SpoolMetrics.Attributes.MODULE, moduleIds.get(m)));
+            String moduleId = moduleIds.get(m);
+            moduleStopped.increment(Map.of(SpoolMetrics.Attributes.MODULE, moduleId));
+            moduleActive.decrement(Map.of(SpoolMetrics.Attributes.MODULE, moduleId));
         });
         healthServer.stop();
     }

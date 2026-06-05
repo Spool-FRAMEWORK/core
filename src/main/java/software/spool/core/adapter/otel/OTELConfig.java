@@ -7,7 +7,11 @@ import io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppen
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -15,6 +19,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.semconv.ServiceAttributes;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -74,8 +79,41 @@ public class OTELConfig {
                         .build())
                 .setMeterProvider(SdkMeterProvider.builder()
                         .setResource(resource)
+                        .registerView(
+                                InstrumentSelector.builder()
+                                        .setType(InstrumentType.HISTOGRAM)
+                                        .setName("spool.*.latency*")
+                                        .build(),
+                                View.builder()
+                                        .setAggregation(Aggregation.explicitBucketHistogram(
+                                                List.of(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0)
+                                        ))
+                                        .build()
+                        )
+                        .registerView(
+                                InstrumentSelector.builder()
+                                        .setType(InstrumentType.HISTOGRAM)
+                                        .setName("spool.*.duration*")
+                                        .build(),
+                                View.builder()
+                                        .setAggregation(Aggregation.explicitBucketHistogram(
+                                                List.of(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0)
+                                        ))
+                                        .build()
+                        )
+                        .registerView(
+                                InstrumentSelector.builder()
+                                        .setType(InstrumentType.HISTOGRAM)
+                                        .setName("spool.*.size*")
+                                        .build(),
+                                View.builder()
+                                        .setAggregation(Aggregation.explicitBucketHistogram(
+                                                List.of(256.0, 512.0, 1024.0, 4096.0, 16384.0, 65536.0, 262144.0, 1048576.0)
+                                        ))
+                                        .build()
+                        )
                         .registerMetricReader(PeriodicMetricReader.builder(metricExporter)
-                                .setInterval(Duration.ofSeconds(10))
+                                .setInterval(Duration.ofSeconds(5))
                                 .build())
                         .build())
                 .buildAndRegisterGlobal();

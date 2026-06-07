@@ -79,6 +79,10 @@ public final class SpoolMetrics {
         public static final String ZOMBIES_TOTAL_DESC    = "Zombie modules removed from registry";
         public static final String CHECK_DURATION        = "spool.watchdog.check.duration";
         public static final String CHECK_DURATION_DESC   = "Duration of each monitoring check cycle";
+        public static final String DOWNTIME_DURATION     = "spool.watchdog.downtime.duration";
+        public static final String DOWNTIME_DURATION_DESC = "Time a module spent in DEGRADED state before recovering";
+        public static final String HEALTHY_RATIO         = "spool.watchdog.healthy.ratio";
+        public static final String HEALTHY_RATIO_DESC    = "Percentage of healthy modules out of all tracked modules (0-100)";
     }
 
     public static final class Attributes {

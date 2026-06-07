@@ -13,6 +13,8 @@ on:
 jobs:
   release:
     uses: Spool-FRAMEWORK/.github/.github/workflows/reusable-release.yml@main
+    with:
+      tag: ${{ inputs.tag }}
     secrets:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

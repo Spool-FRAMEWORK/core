@@ -79,10 +79,18 @@ public final class SpoolMetrics {
         public static final String ZOMBIES_TOTAL_DESC    = "Zombie modules removed from registry";
         public static final String CHECK_DURATION        = "spool.watchdog.check.duration";
         public static final String CHECK_DURATION_DESC   = "Duration of each monitoring check cycle";
-        public static final String DOWNTIME_DURATION     = "spool.watchdog.downtime.duration";
-        public static final String DOWNTIME_DURATION_DESC = "Time a module spent in DEGRADED state before recovering";
-        public static final String HEALTHY_RATIO         = "spool.watchdog.healthy.ratio";
-        public static final String HEALTHY_RATIO_DESC    = "Percentage of healthy modules out of all tracked modules (0-100)";
+        public static final String DOWNTIME_DURATION          = "spool.watchdog.module.downtime";
+        public static final String DOWNTIME_DURATION_DESC     = "Time a module spent in DEGRADED state before recovering";
+        public static final String HEALTHY_RATIO              = "spool.watchdog.healthy.ratio";
+        public static final String HEALTHY_RATIO_DESC         = "Percentage of healthy modules out of all tracked modules (0-100)";
+        public static final String MODULES_ACTIVE             = "spool.watchdog.modules.active";
+        public static final String MODULES_ACTIVE_DESC        = "Currently tracked modules in the watchdog registry";
+        public static final String MODULE_STARTED_TOTAL       = "spool.watchdog.module.started.total";
+        public static final String MODULE_STARTED_TOTAL_DESC  = "Modules seen for the first time by the watchdog";
+        public static final String MODULE_STOPPED_TOTAL       = "spool.watchdog.module.stopped.total";
+        public static final String MODULE_STOPPED_TOTAL_DESC  = "Modules evicted from the watchdog registry as zombies";
+        public static final String MODULE_DEGRADED_TOTAL      = "spool.watchdog.module.degraded.total";
+        public static final String MODULE_DEGRADED_TOTAL_DESC = "Modules marked DEGRADED by the watchdog";
     }
 
     public static final class Attributes {

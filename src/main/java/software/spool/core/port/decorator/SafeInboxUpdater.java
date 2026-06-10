@@ -25,6 +25,17 @@ public class SafeInboxUpdater implements InboxUpdater {
     }
 
     @Override
+    public Envelope update(Envelope envelope) throws InboxUpdateException {
+        try {
+            return updater.update(envelope);
+        } catch (SpoolException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new InboxUpdateException(envelope.idempotencyKey(), e.getMessage(), e);
+        }
+    }
+
+    @Override
     public Collection<Envelope> update(Collection<IdempotencyKey> idempotencyKeys, EnvelopeStatus status) throws InboxUpdateException {
         try {
             return updater.update(idempotencyKeys, status);

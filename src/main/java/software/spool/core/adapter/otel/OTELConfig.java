@@ -22,32 +22,63 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.UnaryOperator;
 
 public class OTELConfig {
     private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
 
     public static void init(String serviceName) {
-        init(serviceName, null, null, null);
+        init(serviceName, OTELExporterSettings.none(), OTELExporterSettings.none(), OTELExporterSettings.none());
     }
 
     public static void init(String serviceName,
                             String tracesEndpointOverride,
                             String logsEndpointOverride,
                             String metricsEndpointOverride) {
-        if (!INITIALIZED.compareAndSet(false, true)) return;
+        init(serviceName,
+                OTELExporterSettings.none().withEndpoint(tracesEndpointOverride),
+                OTELExporterSettings.none().withEndpoint(logsEndpointOverride),
+                OTELExporterSettings.none().withEndpoint(metricsEndpointOverride));
+    }
 
+    public static void init(String serviceName,
+                            OTELExporterSettings traces,
+                            OTELExporterSettings logs,
+                            OTELExporterSettings metrics) {
+        init(serviceName, traces, logs, metrics, System::getenv);
+    }
+
+    static void init(String serviceName,
+                     OTELExporterSettings traces,
+                     OTELExporterSettings logs,
+                     OTELExporterSettings metrics,
+                     UnaryOperator<String> environment) {
+        if (!INITIALIZED.compareAndSet(false, true)) return;
+        try {
+            configure(serviceName, traces, logs, metrics, environment);
+        } catch (RuntimeException exception) {
+            INITIALIZED.set(false);
+            throw exception;
+        }
+    }
+
+    private static void configure(String serviceName,
+                                  OTELExporterSettings traces,
+                                  OTELExporterSettings logs,
+                                  OTELExporterSettings metrics,
+                                  UnaryOperator<String> environment) {
         String name = resolveEnv("SERVICE_NAME", serviceName);
 
         String tracesEp = firstNonBlank(
-                tracesEndpointOverride,
+                traces.endpoint(),
                 resolveEnv("OTEL_TRACES_ENDPOINT", "http://localhost:4318/v1/traces")
         );
         String logsEp = firstNonBlank(
-                logsEndpointOverride,
+                logs.endpoint(),
                 resolveEnv("OTEL_LOGS_ENDPOINT", "http://localhost:3100/otlp/v1/logs")
         );
         String metricsEp = firstNonBlank(
-                metricsEndpointOverride,
+                metrics.endpoint(),
                 resolveEnv("OTEL_METRICS_ENDPOINT", "http://localhost:4320/v1/metrics")
         );
 
@@ -55,17 +86,11 @@ public class OTELConfig {
                 .put(ServiceAttributes.SERVICE_NAME, name)
                 .build();
 
-        OtlpHttpSpanExporter spanExporter = OtlpHttpSpanExporter.builder()
-                .setEndpoint(tracesEp)
-                .build();
+        OtlpHttpSpanExporter spanExporter = OTELExporters.span(tracesEp, traces, environment);
 
-        OtlpHttpLogRecordExporter logExporter = OtlpHttpLogRecordExporter.builder()
-                .setEndpoint(logsEp)
-                .build();
+        OtlpHttpLogRecordExporter logExporter = OTELExporters.log(logsEp, logs, environment);
 
-        OtlpHttpMetricExporter metricExporter = OtlpHttpMetricExporter.builder()
-                .setEndpoint(metricsEp)
-                .build();
+        OtlpHttpMetricExporter metricExporter = OTELExporters.metric(metricsEp, metrics, environment);
 
         OpenTelemetrySdk sdk = OpenTelemetrySdk.builder()
                 .setTracerProvider(SdkTracerProvider.builder()

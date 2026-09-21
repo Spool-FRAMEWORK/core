@@ -15,6 +15,15 @@ public record Envelope(
         Instant updatedAt
 ) {
 
+    /**
+     * Returns when the envelope last changed.
+     *
+     * @return the update date, or the capture date when it has not been updated
+     */
+    public Instant lastModifiedAt() {
+        return updatedAt != null ? updatedAt : capturedAt;
+    }
+
     public Envelope withStatus(final EnvelopeStatus status) {
         return new Envelope(
                 this.idempotencyKey,

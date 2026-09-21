@@ -16,6 +16,7 @@ import software.spool.core.resilience.model.CircuitBreakerStatus;
 import software.spool.core.resilience.model.RetryPolicy;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
@@ -45,6 +46,11 @@ public class ResilientInboxStatusQuery implements InboxStatusQuery {
     @Override
     public Collection<Envelope> findByStatus(EnvelopeStatus status) throws InboxReadException {
         return execute(() -> delegate.findByStatus(status), status.name());
+    }
+
+    @Override
+    public Collection<Envelope> findByStatusModifiedBefore(EnvelopeStatus status, Instant limit) throws InboxReadException {
+        return execute(() -> delegate.findByStatusModifiedBefore(status, limit), status.name());
     }
 
     private <T> T execute(Callable<T> action, String context) {

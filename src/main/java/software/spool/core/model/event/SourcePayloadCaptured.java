@@ -1,7 +1,9 @@
 package software.spool.core.model.event;
 
+import software.spool.core.model.annotation.Delivery;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.SpoolEvent;
+import software.spool.core.port.bus.DeliveryPolicy;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -11,6 +13,7 @@ import java.util.UUID;
  * Emitted when the Crawler successfully captures and serializes a single
  * record from the source.
  */
+@Delivery(DeliveryPolicy.EVERY_SUBSCRIBER)
 public record SourcePayloadCaptured(
         String eventId,
         Instant timestamp,

@@ -10,21 +10,27 @@ import software.spool.core.utils.routing.AnnotationEventRouter;
 import software.spool.core.utils.routing.EventRouter;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Thread-safe in-memory {@link EventBus} implementation for local
  * testing and single-process deployments.
  *
  * <p>
- * Handlers are stored in a {@link ConcurrentHashMap} keyed by destination and
- * dispatched synchronously on the calling thread.
+ * Handlers are stored in a {@link ConcurrentHashMap} keyed by event type and
+ * dispatched synchronously on the calling thread. An event with
+ * {@code EVERY_SUBSCRIBER} reaches every handler of its type; one with
+ * {@code SINGLE_SUBSCRIBER} reaches one of them, taking turns.
  * </p>
  */
 public class InMemoryEventBus implements EventBus {
     private final ConcurrentHashMap<Class<? extends Event>, CopyOnWriteArrayList<Handler<?>>> registry =
             new ConcurrentHashMap<>();
+    private final Map<Class<? extends Event>, AtomicInteger> nextHandlerByType = new ConcurrentHashMap<>();
     private final EventRouter router;
 
     public InMemoryEventBus(EventRouter router) {
@@ -55,8 +61,10 @@ public class InMemoryEventBus implements EventBus {
                     event.getClass(),
                     new CopyOnWriteArrayList<>()
             );
-            for (Handler<?> handler : handlers) {
-                ((Handler<E>) handler).handle(event);
+            switch (router.routeOf(event.getClass()).deliveryPolicy()) {
+                case EVERY_SUBSCRIBER -> handlers.forEach(handler -> ((Handler<E>) handler).handle(event));
+                case SINGLE_SUBSCRIBER -> nextHandler(event.getClass(), handlers)
+                        .ifPresent(handler -> ((Handler<E>) handler).handle(event));
             }
         } catch (Exception e) {
             throw new EventBusEmitException(
@@ -65,5 +73,11 @@ public class InMemoryEventBus implements EventBus {
                     e
             );
         }
+    }
+
+    private Optional<Handler<?>> nextHandler(Class<? extends Event> eventType, List<Handler<?>> handlers) {
+        if (handlers.isEmpty()) return Optional.empty();
+        int position = nextHandlerByType.computeIfAbsent(eventType, type -> new AtomicInteger()).getAndIncrement();
+        return Optional.of(handlers.get(Math.floorMod(position, handlers.size())));
     }
 }

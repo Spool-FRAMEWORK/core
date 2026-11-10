@@ -1,9 +1,11 @@
 package software.spool.core.model.failure;
 
+import software.spool.core.model.annotation.Delivery;
 import software.spool.core.model.SpoolFailedEvent;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.SpoolEvent;
 import software.spool.core.model.event.ItemPublished;
+import software.spool.core.port.bus.DeliveryPolicy;
 
 import java.time.Instant;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.UUID;
  * Emitted when an item has been successfully persisted to the data lake by the
  * Ingester.
  */
+@Delivery(DeliveryPolicy.EVERY_SUBSCRIBER)
 public record EnvelopeQuarantined(
         String eventId,
         String causationId,

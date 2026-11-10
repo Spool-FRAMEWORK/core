@@ -1,8 +1,10 @@
 package software.spool.core.model.event;
 
+import software.spool.core.model.annotation.Delivery;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.vo.PartitionKey;
 import software.spool.core.model.SpoolEvent;
+import software.spool.core.port.bus.DeliveryPolicy;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -12,6 +14,7 @@ import java.util.UUID;
  * Emitted when an item has been successfully persisted to the data lake by the
  * Ingester.
  */
+@Delivery(DeliveryPolicy.EVERY_SUBSCRIBER)
 public record EnvelopePersisted(
         String eventId,
         String causationId,

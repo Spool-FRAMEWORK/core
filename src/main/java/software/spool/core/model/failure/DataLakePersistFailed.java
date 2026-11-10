@@ -1,8 +1,10 @@
 package software.spool.core.model.failure;
 
+import software.spool.core.model.annotation.Delivery;
 import software.spool.core.model.SpoolEvent;
 import software.spool.core.model.SpoolFailedEvent;
 import software.spool.core.model.event.SourcePayloadCaptured;
+import software.spool.core.port.bus.DeliveryPolicy;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -15,6 +17,7 @@ import java.util.UUID;
  * Carries the {@link #errorMessage()} describing the root cause.
  * </p>
  */
+@Delivery(DeliveryPolicy.EVERY_SUBSCRIBER)
 public record DataLakePersistFailed(
         String eventId,
         Instant timestamp,

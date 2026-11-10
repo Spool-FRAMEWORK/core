@@ -5,6 +5,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import software.spool.core.model.Event;
+import software.spool.core.model.annotation.Delivery;
 import software.spool.core.model.annotation.EventAddress;
 import software.spool.core.model.event.EnvelopeConsumed;
 import software.spool.core.model.event.EnvelopePersisted;
@@ -20,6 +21,7 @@ import software.spool.core.model.failure.InboxItemStoreFailed;
 import software.spool.core.model.failure.ItemPublishFailed;
 import software.spool.core.model.failure.SourceFetchFailed;
 import software.spool.core.model.failure.SourceItemCaptureFailed;
+import software.spool.core.port.bus.DeliveryPolicy;
 import software.spool.core.port.bus.Destination;
 
 import java.time.Instant;
@@ -55,6 +57,24 @@ class AnnotationEventRouterTest {
         assertThat(router.routeOf(eventType).channel()).isEqualTo(new Destination(expectedChannel));
     }
 
+    static Stream<Arguments> deliveryPolicies() {
+        return Stream.of(
+                Arguments.of(EnvelopeStored.class, DeliveryPolicy.SINGLE_SUBSCRIBER),
+                Arguments.of(EnvelopePersisted.class, DeliveryPolicy.EVERY_SUBSCRIBER),
+                Arguments.of(EnvelopeQuarantined.class, DeliveryPolicy.EVERY_SUBSCRIBER),
+                Arguments.of(DataLakePersistFailed.class, DeliveryPolicy.EVERY_SUBSCRIBER),
+                Arguments.of(SourcePayloadCaptured.class, DeliveryPolicy.EVERY_SUBSCRIBER),
+                Arguments.of(PatientAdmitted.class, DeliveryPolicy.SINGLE_SUBSCRIBER),
+                Arguments.of(PatientTransferred.class, DeliveryPolicy.EVERY_SUBSCRIBER));
+    }
+
+    @ParameterizedTest
+    @MethodSource("deliveryPolicies")
+    void routeOf_eventType_hasTheDeclaredDeliveryPolicyOrSingleSubscriberByDefault(
+            Class<? extends Event> eventType, DeliveryPolicy expectedPolicy) {
+        assertThat(router.routeOf(eventType).deliveryPolicy()).isEqualTo(expectedPolicy);
+    }
+
     @Test
     void routeOf_domainEventWithoutAddress_isItsNameSplitByDotsWithoutPrefix() {
         assertThat(router.routeOf(PatientAdmitted.class).channel()).isEqualTo(new Destination("patient.admitted"));
@@ -71,6 +91,9 @@ class AnnotationEventRouterTest {
     }
 
     record PatientAdmitted(String eventId, String causationId, String correlationId, Instant timestamp) implements Event { }
+
+    @Delivery(DeliveryPolicy.EVERY_SUBSCRIBER)
+    record PatientTransferred(String eventId, String causationId, String correlationId, Instant timestamp) implements Event { }
 
     @EventAddress("hospital.discharges")
     record PatientDischarged(String eventId, String causationId, String correlationId, Instant timestamp) implements Event { }

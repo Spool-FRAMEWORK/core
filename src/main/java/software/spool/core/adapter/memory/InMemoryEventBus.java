@@ -6,7 +6,7 @@ import software.spool.core.model.Event;
 import software.spool.core.port.bus.EventBus;
 import software.spool.core.port.bus.Handler;
 import software.spool.core.port.bus.Subscription;
-import software.spool.core.utils.routing.DefaultEventRouter;
+import software.spool.core.utils.routing.AnnotationEventRouter;
 import software.spool.core.utils.routing.EventRouter;
 
 import java.util.List;
@@ -32,7 +32,7 @@ public class InMemoryEventBus implements EventBus {
     }
 
     public InMemoryEventBus() {
-        this(new DefaultEventRouter());
+        this(new AnnotationEventRouter());
     }
 
     @Override
@@ -61,7 +61,7 @@ public class InMemoryEventBus implements EventBus {
         } catch (Exception e) {
             throw new EventBusEmitException(
                     event,
-                    "Failed to publish event to destination [" + router.resolve(event.getClass()) + "]",
+                    "Failed to publish event to destination [" + router.routeOf(event.getClass()).channel().value() + "]; " + e.getMessage(),
                     e
             );
         }

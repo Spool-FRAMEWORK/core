@@ -6,8 +6,8 @@ import software.spool.core.model.Event;
  * Naming strategies for deriving default channel names from event class names.
  *
  * <p>
- * Used by {@link ChannelRouter} when no explicit route is registered for
- * an event type. For example, {@code OrderReceived} becomes:
+ * Used by {@link AnnotationEventRouter} when an event type declares no address.
+ * For example, {@code OrderReceived} becomes:
  * </p>
  * <ul>
  * <li>{@link #DOT_CASE} — {@code order.received}</li>

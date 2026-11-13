@@ -18,13 +18,18 @@ public final class SpoolMetrics {
         public static final String LATENCY_DESC = "Time from detection to ingester delivery";
     }
 
+    public static final class Validation {
+        private Validation() {}
+
+        public static final String RECORDS_REJECTED_TOTAL = "spool.records.rejected.total";
+        public static final String RECORDS_REJECTED_TOTAL_DESC = "Records discarded by validation, by module";
+    }
+
     public static final class Ingester {
         private Ingester() {}
 
         public static final String RECORDS_TOTAL = "spool.ingester.records.total";
         public static final String RECORDS_TOTAL_DESC = "Successfully ingested records";
-        public static final String RECORDS_REJECTED_TOTAL = "spool.ingester.records.rejected.total";
-        public static final String RECORDS_REJECTED_TOTAL_DESC = "Records discarded by validation";
         public static final String PROCESSING_DURATION = "spool.ingester.processing.duration";
         public static final String PROCESSING_DURATION_DESC = "Processing and validation duration per record";
         public static final String RECORD_SIZE = "spool.ingester.record.size";

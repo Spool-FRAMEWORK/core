@@ -1,6 +1,5 @@
 package software.spool.core.model.vo;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 public record PartitionKey(String value) {
@@ -9,7 +8,7 @@ public record PartitionKey(String value) {
     }
 
     public static PartitionKey ofNow() {
-        return new PartitionKey(PartitionKeyBuilderUtils.datePrefix());
+        return new PartitionKey(PartitionKeyBuilderUtils.dateEntries().format());
     }
 
     public static ManualPartitionKeyBuilder ofEntries() {
@@ -25,7 +24,7 @@ public record PartitionKey(String value) {
     }
 
     public boolean contains(PartitionKey scope) {
-        return Arrays.stream(scope.value().split("::"))
-                     .allMatch(pair -> this.value().contains(pair));
+        return KeyEntries.split(scope.value()).stream()
+                .allMatch(entry -> this.value().contains(entry));
     }
 }

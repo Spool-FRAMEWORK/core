@@ -1,5 +1,6 @@
 package software.spool.core.model.vo;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,10 +20,11 @@ public record PartitionKeySchema(String sourceId, Class<?> eventType, List<Strin
     }
 
     public String value() {
-        String base = Objects.isNull(eventType)
-                ? sourceId
-                : String.format("%s::%s", sourceId, eventType.getSimpleName());
-        return attributes.isEmpty() ? base : base + "::" + String.join("::", attributes);
+        List<String> segments = new ArrayList<>();
+        segments.add(sourceId);
+        if (Objects.nonNull(eventType)) segments.add(eventType.getSimpleName());
+        segments.addAll(attributes);
+        return KeyEntries.join(segments);
     }
 
     public static Builder builder() {

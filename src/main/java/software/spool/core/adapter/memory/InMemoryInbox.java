@@ -44,10 +44,18 @@ public class InMemoryInbox implements InboxUpdater, InboxEnvelopeResolver, Inbox
     }
 
     @Override
+    public Envelope update(Envelope envelope) throws InboxUpdateException {
+        envelopes.put(envelope.idempotencyKey(), envelope);
+        return envelope;
+    }
+
+    @Override
     public Collection<Envelope> update(Collection<IdempotencyKey> idempotencyKeys, EnvelopeStatus status) throws InboxUpdateException {
         return idempotencyKeys.stream()
-                .filter(i -> this.envelopes.put(i, this.envelopes.get(i).withStatus(status)) != null)
-                .map(this.envelopes::get)
+                .map(idempotencyKey -> Optional.ofNullable(
+                        envelopes.computeIfPresent(idempotencyKey, (key, envelope) -> envelope.withStatus(status))
+                ))
+                .flatMap(Optional::stream)
                 .toList();
     }
 }

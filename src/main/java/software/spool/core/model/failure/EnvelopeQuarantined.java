@@ -5,6 +5,7 @@ import software.spool.core.model.SpoolFailedEvent;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.SpoolEvent;
 import software.spool.core.model.event.ItemPublished;
+import software.spool.core.model.quarantine.QuarantineReason;
 import software.spool.core.port.bus.DeliveryPolicy;
 
 import java.time.Instant;
@@ -13,8 +14,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Emitted when an item has been successfully persisted to the data lake by the
- * Ingester.
+ * Emitted when an envelope has to go to quarantine, with the reason and, when it failed a validation, the
+ * violations. The janitor moves the envelope to quarantine and keeps its record.
  */
 @Delivery(DeliveryPolicy.EVERY_SUBSCRIBER)
 public record EnvelopeQuarantined(
@@ -23,11 +24,14 @@ public record EnvelopeQuarantined(
         String correlationId,
         Instant timestamp,
         IdempotencyKey idempotencyKey,
+        QuarantineReason reason,
         List<String> violations) implements SpoolFailedEvent {
     public EnvelopeQuarantined {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
+        Objects.requireNonNull(reason, "reason is required");
+        violations = Objects.isNull(violations) ? List.of() : List.copyOf(violations);
     }
 
     public static EnvelopeQuarantined.Builder builder() {
@@ -36,13 +40,14 @@ public record EnvelopeQuarantined(
 
     @Override
     public String errorMessage() {
-        return "Envelope quarantined: " + violations.toString();
+        return "Envelope quarantined: " + reason + " " + violations;
     }
 
     public static class Builder {
         private String correlationId;
         private String causationId;
         private IdempotencyKey idempotencyKey;
+        private QuarantineReason reason;
         private List<String> violations;
 
         public EnvelopeQuarantined.Builder from(final SpoolEvent cause) {
@@ -73,6 +78,11 @@ public record EnvelopeQuarantined(
             return this;
         }
 
+        public EnvelopeQuarantined.Builder reason(final QuarantineReason reason) {
+            this.reason = reason;
+            return this;
+        }
+
         public EnvelopeQuarantined.Builder violations(final List<String> violations) {
             this.violations = violations;
             return this;
@@ -85,6 +95,7 @@ public record EnvelopeQuarantined(
                     correlationId,
                     Instant.now(),
                     idempotencyKey,
+                    reason,
                     violations);
         }
     }

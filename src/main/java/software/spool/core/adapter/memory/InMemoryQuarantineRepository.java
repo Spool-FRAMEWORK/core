@@ -1,0 +1,38 @@
+package software.spool.core.adapter.memory;
+
+import software.spool.core.model.quarantine.QuarantinedRecord;
+import software.spool.core.model.vo.IdempotencyKey;
+import software.spool.core.port.quarantine.QuarantineRepository;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * {@link QuarantineRepository} kept in memory, for tests and single-process runs. Its records are lost when the
+ * process stops.
+ */
+public class InMemoryQuarantineRepository implements QuarantineRepository {
+    private final ConcurrentHashMap<IdempotencyKey, QuarantinedRecord> records = new ConcurrentHashMap<>();
+
+    @Override
+    public void save(QuarantinedRecord quarantinedRecord) {
+        records.put(quarantinedRecord.idempotencyKey(), quarantinedRecord);
+    }
+
+    @Override
+    public Optional<QuarantinedRecord> find(IdempotencyKey idempotencyKey) {
+        return Optional.ofNullable(records.get(idempotencyKey));
+    }
+
+    @Override
+    public Collection<QuarantinedRecord> findAll() {
+        return List.copyOf(records.values());
+    }
+
+    @Override
+    public void delete(IdempotencyKey idempotencyKey) {
+        records.remove(idempotencyKey);
+    }
+}

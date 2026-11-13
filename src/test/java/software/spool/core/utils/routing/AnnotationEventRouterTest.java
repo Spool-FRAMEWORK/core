@@ -9,6 +9,8 @@ import software.spool.core.model.annotation.Delivery;
 import software.spool.core.model.annotation.EventAddress;
 import software.spool.core.model.event.EnvelopeConsumed;
 import software.spool.core.model.event.EnvelopePersisted;
+import software.spool.core.model.event.EnvelopePurged;
+import software.spool.core.model.event.EnvelopeRepublished;
 import software.spool.core.model.event.EnvelopeStored;
 import software.spool.core.model.event.EnvelopesMounted;
 import software.spool.core.model.event.ItemPublished;
@@ -38,6 +40,8 @@ class AnnotationEventRouterTest {
                 Arguments.of(EnvelopeConsumed.class, "spool.envelope.consumed"),
                 Arguments.of(EnvelopePersisted.class, "spool.envelope.persisted"),
                 Arguments.of(EnvelopeStored.class, "spool.envelope.stored"),
+                Arguments.of(EnvelopeRepublished.class, "spool.envelope.republished"),
+                Arguments.of(EnvelopePurged.class, "spool.envelope.purged"),
                 Arguments.of(EnvelopesMounted.class, "spool.envelopes.mounted"),
                 Arguments.of(ItemPublished.class, "spool.item.published"),
                 Arguments.of(ModuleHeartbeat.class, "spool.module.heartbeat"),
@@ -62,6 +66,8 @@ class AnnotationEventRouterTest {
                 Arguments.of(EnvelopeStored.class, DeliveryPolicy.SINGLE_SUBSCRIBER),
                 Arguments.of(EnvelopePersisted.class, DeliveryPolicy.EVERY_SUBSCRIBER),
                 Arguments.of(EnvelopeQuarantined.class, DeliveryPolicy.EVERY_SUBSCRIBER),
+                Arguments.of(EnvelopeRepublished.class, DeliveryPolicy.EVERY_SUBSCRIBER),
+                Arguments.of(EnvelopePurged.class, DeliveryPolicy.EVERY_SUBSCRIBER),
                 Arguments.of(DataLakePersistFailed.class, DeliveryPolicy.EVERY_SUBSCRIBER),
                 Arguments.of(SourcePayloadCaptured.class, DeliveryPolicy.EVERY_SUBSCRIBER),
                 Arguments.of(PatientAdmitted.class, DeliveryPolicy.SINGLE_SUBSCRIBER),

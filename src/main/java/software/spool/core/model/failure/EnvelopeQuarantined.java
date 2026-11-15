@@ -5,6 +5,7 @@ import software.spool.core.model.SpoolFailedEvent;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.SpoolEvent;
 import software.spool.core.model.event.ItemPublished;
+import software.spool.core.model.quarantine.QuarantineLocation;
 import software.spool.core.model.quarantine.QuarantineReason;
 import software.spool.core.port.bus.DeliveryPolicy;
 
@@ -14,8 +15,9 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Emitted when an envelope has to go to quarantine, with the reason and, when it failed a validation, the
- * violations. The janitor moves the envelope to quarantine and keeps its record.
+ * Emitted when an envelope has to go to quarantine, with the reason, the violations when it failed a validation,
+ * and where the envelope stayed. For an envelope in the inbox, the janitor moves it to quarantine and keeps its
+ * record; for one in bronze, the mounter has already kept it.
  */
 @Delivery(DeliveryPolicy.EVERY_SUBSCRIBER)
 public record EnvelopeQuarantined(
@@ -25,13 +27,15 @@ public record EnvelopeQuarantined(
         Instant timestamp,
         IdempotencyKey idempotencyKey,
         QuarantineReason reason,
-        List<String> violations) implements SpoolFailedEvent {
+        List<String> violations,
+        QuarantineLocation location) implements SpoolFailedEvent {
     public EnvelopeQuarantined {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
         Objects.requireNonNull(reason, "reason is required");
         violations = Objects.isNull(violations) ? List.of() : List.copyOf(violations);
+        location = Objects.requireNonNullElseGet(location, QuarantineLocation::inbox);
     }
 
     public static EnvelopeQuarantined.Builder builder() {
@@ -49,6 +53,7 @@ public record EnvelopeQuarantined(
         private IdempotencyKey idempotencyKey;
         private QuarantineReason reason;
         private List<String> violations;
+        private QuarantineLocation location = QuarantineLocation.inbox();
 
         public EnvelopeQuarantined.Builder from(final SpoolEvent cause) {
             this.correlationId = cause.correlationId();
@@ -88,6 +93,11 @@ public record EnvelopeQuarantined(
             return this;
         }
 
+        public EnvelopeQuarantined.Builder location(final QuarantineLocation location) {
+            this.location = location;
+            return this;
+        }
+
         public EnvelopeQuarantined build() {
             return new EnvelopeQuarantined(
                     UUID.randomUUID().toString(),
@@ -96,7 +106,8 @@ public record EnvelopeQuarantined(
                     Instant.now(),
                     idempotencyKey,
                     reason,
-                    violations);
+                    violations,
+                    location);
         }
     }
 }

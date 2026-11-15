@@ -1,5 +1,6 @@
 package software.spool.core.adapter.memory;
 
+import software.spool.core.model.quarantine.QuarantineStatus;
 import software.spool.core.model.quarantine.QuarantinedRecord;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.port.quarantine.QuarantineRepository;
@@ -24,6 +25,11 @@ public class InMemoryQuarantineRepository implements QuarantineRepository {
     @Override
     public Optional<QuarantinedRecord> find(IdempotencyKey idempotencyKey) {
         return Optional.ofNullable(records.get(idempotencyKey));
+    }
+
+    @Override
+    public Collection<QuarantinedRecord> findByStatus(QuarantineStatus status) {
+        return records.values().stream().filter(quarantinedRecord -> quarantinedRecord.status() == status).toList();
     }
 
     @Override

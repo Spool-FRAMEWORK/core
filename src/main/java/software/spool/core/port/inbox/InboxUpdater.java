@@ -9,11 +9,15 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Changes the status of envelopes already in the inbox.
+ * Changes the status of envelopes already in the inbox, or writes a whole envelope.
  *
  * <p>
- * A key that is not in the inbox is skipped without error: the rest of the batch is still
+ * When changing the status, a key that is not in the inbox is skipped without error: the rest of the batch is still
  * updated, and the returned collection only holds the envelopes that were updated.
+ * </p>
+ * <p>
+ * Writing a whole envelope with {@link #update(Envelope)} stores it under its own status, whether or not its key was
+ * already in the inbox. It does not remove copies of the key under other statuses.
  * </p>
  */
 public interface InboxUpdater {

@@ -28,6 +28,7 @@ final class JacksonMapperFactory {
     private static ObjectMapper buildMapper(ObjectMapper mapper) {
         return mapper
                 .registerModule(new JavaTimeModule())
+                .registerModule(new QuarantineModule())
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }

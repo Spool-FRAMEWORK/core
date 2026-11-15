@@ -20,7 +20,8 @@ import java.util.Map;
 public class RecordSerializerFactory {
     private static final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
-            .registerModule(new Jdk8Module());;
+            .registerModule(new Jdk8Module())
+            .registerModule(new QuarantineModule());
 
     /**
      * Returns a serializer that writes a {@link JsonNode} to a compact JSON string.

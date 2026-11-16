@@ -27,6 +27,10 @@ public sealed interface QuarantineResolution {
         return new Corrected(resolvedAt, correctedTo);
     }
 
+    static QuarantineResolution bypassed(Instant resolvedAt, String reason) {
+        return new Bypassed(resolvedAt, reason);
+    }
+
     static QuarantineResolution purged(Instant resolvedAt) {
         return new Purged(resolvedAt);
     }
@@ -74,6 +78,29 @@ public sealed interface QuarantineResolution {
         @Override
         public QuarantineStatus status() {
             return QuarantineStatus.CORRECTED;
+        }
+
+        @Override
+        public Optional<Instant> resolvedAt() {
+            return Optional.of(at);
+        }
+    }
+
+    /**
+     * Sent back as it was, marked so that validation lets it through, because a person judged it valid for
+     * {@code reason}.
+     */
+    record Bypassed(Instant at, String reason) implements QuarantineResolution {
+        public Bypassed {
+            Objects.requireNonNull(at, "at is required");
+            if (reason == null || reason.isBlank()) {
+                throw new IllegalArgumentException("A bypass requires a reason; the reason given is empty");
+            }
+        }
+
+        @Override
+        public QuarantineStatus status() {
+            return QuarantineStatus.BYPASSED;
         }
 
         @Override

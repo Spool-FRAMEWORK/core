@@ -7,5 +7,6 @@ public enum QuarantineStatus {
     PENDING,
     REPUBLISHED,
     CORRECTED,
+    BYPASSED,
     PURGED
 }

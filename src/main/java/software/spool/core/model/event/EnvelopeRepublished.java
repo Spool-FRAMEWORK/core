@@ -10,11 +10,12 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Emitted when an envelope leaves quarantine and goes back to the inbox to be processed again.
+ * Emitted when an envelope leaves quarantine and goes back to where it stayed, to be processed again.
  *
  * <p>
- * {@code republishedIdempotencyKey} is the key the envelope has in the inbox now: the same as
- * {@code idempotencyKey} when it was republished as it was, or a new one when its payload was corrected.
+ * {@code republishedIdempotencyKey} is the key the envelope has now: the same as {@code idempotencyKey} when it was
+ * republished as it was or with a bypass, or a new one when its payload was corrected. {@code resolution} says which
+ * of the three it was; an event without it, published before it existed, is deduced from the two keys.
  * </p>
  */
 @Delivery(DeliveryPolicy.EVERY_SUBSCRIBER)
@@ -24,17 +25,30 @@ public record EnvelopeRepublished(
         String correlationId,
         String causationId,
         IdempotencyKey idempotencyKey,
-        IdempotencyKey republishedIdempotencyKey) implements SpoolEvent {
+        IdempotencyKey republishedIdempotencyKey,
+        Resolution resolution) implements SpoolEvent {
+
+    /**
+     * How the envelope left quarantine.
+     */
+    public enum Resolution {
+        UNCHANGED,
+        CORRECTED,
+        BYPASSED
+    }
 
     public EnvelopeRepublished {
         Objects.requireNonNull(eventId, "eventId is required");
         Objects.requireNonNull(timestamp, "timestamp is required");
         Objects.requireNonNull(idempotencyKey, "idempotencyKey is required");
         Objects.requireNonNull(republishedIdempotencyKey, "republishedIdempotencyKey is required");
+        if (resolution == null) {
+            resolution = idempotencyKey.equals(republishedIdempotencyKey) ? Resolution.UNCHANGED : Resolution.CORRECTED;
+        }
     }
 
     public boolean wasCorrected() {
-        return !idempotencyKey.equals(republishedIdempotencyKey);
+        return resolution == Resolution.CORRECTED;
     }
 
     public static Builder builder() {
@@ -46,6 +60,7 @@ public record EnvelopeRepublished(
         private String causationId;
         private IdempotencyKey idempotencyKey;
         private IdempotencyKey republishedIdempotencyKey;
+        private Resolution resolution;
 
         public Builder correlationId(final String correlationId) {
             this.correlationId = correlationId;
@@ -67,6 +82,11 @@ public record EnvelopeRepublished(
             return this;
         }
 
+        public Builder resolution(final Resolution resolution) {
+            this.resolution = resolution;
+            return this;
+        }
+
         public EnvelopeRepublished build() {
             return new EnvelopeRepublished(
                     UUID.randomUUID().toString(),
@@ -74,7 +94,8 @@ public record EnvelopeRepublished(
                     correlationId,
                     causationId,
                     idempotencyKey,
-                    republishedIdempotencyKey);
+                    republishedIdempotencyKey,
+                    resolution);
         }
     }
 }

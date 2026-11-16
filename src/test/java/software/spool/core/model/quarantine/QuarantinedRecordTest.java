@@ -51,6 +51,23 @@ class QuarantinedRecordTest {
     }
 
     @Test
+    void resolve_bypassed_isBypassedWithItsReason() {
+        QuarantinedRecord resolved = pendingRecord()
+                .resolve(QuarantineResolution.bypassed(SECOND_TIME, "price rule misconfigured"));
+
+        assertThat(resolved.status()).isEqualTo(QuarantineStatus.BYPASSED);
+        assertThat(resolved.resolution()).isInstanceOfSatisfying(QuarantineResolution.Bypassed.class,
+                bypassed -> assertThat(bypassed.reason()).isEqualTo("price rule misconfigured"));
+    }
+
+    @Test
+    void bypassed_blankReason_fails() {
+        assertThatThrownBy(() -> QuarantineResolution.bypassed(SECOND_TIME, " "))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("reason");
+    }
+
+    @Test
     void resolve_alreadyResolvedRecord_fails() {
         QuarantinedRecord resolved = pendingRecord().resolve(QuarantineResolution.purged(SECOND_TIME));
 

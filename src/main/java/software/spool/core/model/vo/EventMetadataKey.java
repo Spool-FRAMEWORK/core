@@ -6,5 +6,6 @@ public enum EventMetadataKey {
     VERSION,
     PARTITION_SCHEMA,
     CORRELATION_ID,
-    CORRECTED_FROM
+    CORRECTED_FROM,
+    VALIDATION_BYPASS
 }

@@ -51,6 +51,17 @@ class QuarantinedRecordJsonTest {
         assertThat(read.history()).isEqualTo(original.history());
     }
 
+    @Test
+    void roundTrip_bypassedRecord_keepsItsReason() {
+        QuarantinedRecord original = QuarantinedRecord.pending(envelope(), QuarantineLocation.inbox(),
+                        QuarantineReason.VALIDATION_FAILED, List.of(), FIRST_TIME)
+                .resolve(QuarantineResolution.bypassed(SECOND_TIME, "price rule misconfigured"));
+
+        QuarantinedRecord read = roundTrip(original);
+
+        assertThat(read.resolution()).isEqualTo(QuarantineResolution.bypassed(SECOND_TIME, "price rule misconfigured"));
+    }
+
     private static QuarantinedRecord roundTrip(QuarantinedRecord quarantinedRecord) {
         byte[] json = RecordSerializerFactory.<QuarantinedRecord>record().serialize(quarantinedRecord);
         return PayloadDeserializerFactory.json().as(QuarantinedRecord.class).deserialize(json);

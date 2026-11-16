@@ -31,6 +31,7 @@ final class QuarantineModule extends SimpleModule {
             @JsonSubTypes.Type(value = QuarantineResolution.Pending.class, name = "PENDING"),
             @JsonSubTypes.Type(value = QuarantineResolution.Republished.class, name = "REPUBLISHED"),
             @JsonSubTypes.Type(value = QuarantineResolution.Corrected.class, name = "CORRECTED"),
+            @JsonSubTypes.Type(value = QuarantineResolution.Bypassed.class, name = "BYPASSED"),
             @JsonSubTypes.Type(value = QuarantineResolution.Purged.class, name = "PURGED")
     })
     private interface ResolutionMixin {

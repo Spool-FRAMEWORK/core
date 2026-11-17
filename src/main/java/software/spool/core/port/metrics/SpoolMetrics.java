@@ -23,6 +23,8 @@ public final class SpoolMetrics {
 
         public static final String RECORDS_REJECTED_TOTAL = "spool.records.rejected.total";
         public static final String RECORDS_REJECTED_TOTAL_DESC = "Records discarded by validation, by module";
+        public static final String WARNINGS_TOTAL = "spool.validation.warnings.total";
+        public static final String WARNINGS_TOTAL_DESC = "WARNING violations found by validation, by module";
     }
 
     public static final class Ingester {

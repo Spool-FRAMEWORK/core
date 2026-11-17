@@ -1,4 +1,4 @@
-package software.spool.core.adapter.health;
+package software.spool.core.adapter.http;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;

@@ -1,10 +1,11 @@
 package software.spool.core.model.spool;
 
-import software.spool.core.adapter.health.HTTPHealthServer;
-import software.spool.core.port.health.HealthServer;
+import software.spool.core.adapter.http.HealthRoutes;
+import software.spool.core.adapter.http.JdkNodeHttpServer;
 import software.spool.core.port.health.HealthStatus;
 import software.spool.core.port.health.ModuleHealthPayload;
 import software.spool.core.port.health.NodeHealthPayload;
+import software.spool.core.port.http.NodeHttpServer;
 import software.spool.core.port.metrics.MetricsRegistry;
 import software.spool.core.port.metrics.SpoolMetrics;
 
@@ -20,7 +21,7 @@ public class SpoolNode {
     private final List<SpoolModule> modules = new ArrayList<>();
     private final Map<SpoolModule, String> moduleIds = new HashMap<>();
     private final Map<String, HealthStatus> lastKnownStatus = new ConcurrentHashMap<>();
-    private final HealthServer healthServer;
+    private final NodeHttpServer httpServer;
     private final String nodeId;
     private final MetricsRegistry.CounterMetric moduleStarted;
     private final MetricsRegistry.CounterMetric moduleStopped;
@@ -34,7 +35,8 @@ public class SpoolNode {
     private static final StartPermit PERMIT = new StartPermit();
 
     private SpoolNode(int healthPort, String nodeId, MetricsRegistry metricsRegistry) {
-        this.healthServer = new HTTPHealthServer(healthPort, this::aggregateHealth);
+        this.httpServer = new JdkNodeHttpServer(healthPort);
+        HealthRoutes.of(this::aggregateHealth).forEach(httpServer::register);
         this.nodeId = nodeId;
         this.moduleStarted  = metricsRegistry.counter(SpoolMetrics.Module.STARTED_TOTAL,  SpoolMetrics.Module.STARTED_TOTAL_DESC,  "events");
         this.moduleStopped  = metricsRegistry.counter(SpoolMetrics.Module.STOPPED_TOTAL,  SpoolMetrics.Module.STOPPED_TOTAL_DESC,  "events");
@@ -65,7 +67,8 @@ public class SpoolNode {
     }
 
     public void start() throws IOException {
-        healthServer.start();
+        modules.forEach(module -> module.routes().forEach(httpServer::register));
+        httpServer.start();
         modules.forEach(m -> {
             m.start(PERMIT);
             String moduleId = moduleIds.get(m);
@@ -81,7 +84,7 @@ public class SpoolNode {
             moduleStopped.increment(Map.of(SpoolMetrics.Attributes.MODULE, moduleId));
             moduleActive.decrement(Map.of(SpoolMetrics.Attributes.MODULE, moduleId));
         });
-        healthServer.stop();
+        httpServer.stop();
     }
 
     public SpoolNode and(SpoolNode other) {

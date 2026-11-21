@@ -7,10 +7,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Emitted when an item has been successfully persisted to the data lake by the
- * Ingester.
- */
+/** Emitted when the mounter has mounted a partition. Nobody publishes it yet. */
 public record EnvelopesMounted(
         String eventId,
         String causationId,

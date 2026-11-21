@@ -7,22 +7,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 import software.spool.core.model.Event;
 import software.spool.core.model.annotation.Delivery;
 import software.spool.core.model.annotation.EventAddress;
-import software.spool.core.model.event.EnvelopeConsumed;
 import software.spool.core.model.event.EnvelopePersisted;
 import software.spool.core.model.event.EnvelopePurged;
 import software.spool.core.model.event.EnvelopeRepublished;
 import software.spool.core.model.event.EnvelopeStored;
 import software.spool.core.model.event.EnvelopesMounted;
-import software.spool.core.model.event.ItemPublished;
-import software.spool.core.model.event.ModuleHeartbeat;
 import software.spool.core.model.event.SourcePayloadCaptured;
 import software.spool.core.model.failure.DataLakePersistFailed;
 import software.spool.core.model.failure.EnvelopeQuarantined;
-import software.spool.core.model.failure.InboxItemConsumptionFailed;
-import software.spool.core.model.failure.InboxItemStoreFailed;
-import software.spool.core.model.failure.ItemPublishFailed;
-import software.spool.core.model.failure.SourceFetchFailed;
-import software.spool.core.model.failure.SourceItemCaptureFailed;
 import software.spool.core.port.bus.DeliveryPolicy;
 import software.spool.core.port.bus.Destination;
 
@@ -37,22 +29,14 @@ class AnnotationEventRouterTest {
 
     static Stream<Arguments> spoolEvents() {
         return Stream.of(
-                Arguments.of(EnvelopeConsumed.class, "spool.envelope.consumed"),
                 Arguments.of(EnvelopePersisted.class, "spool.envelope.persisted"),
                 Arguments.of(EnvelopeStored.class, "spool.envelope.stored"),
                 Arguments.of(EnvelopeRepublished.class, "spool.envelope.republished"),
                 Arguments.of(EnvelopePurged.class, "spool.envelope.purged"),
                 Arguments.of(EnvelopesMounted.class, "spool.envelopes.mounted"),
-                Arguments.of(ItemPublished.class, "spool.item.published"),
-                Arguments.of(ModuleHeartbeat.class, "spool.module.heartbeat"),
                 Arguments.of(SourcePayloadCaptured.class, "spool.source.payload.captured"),
                 Arguments.of(DataLakePersistFailed.class, "spool.data.lake.persist.failed"),
-                Arguments.of(EnvelopeQuarantined.class, "spool.envelope.quarantined"),
-                Arguments.of(InboxItemConsumptionFailed.class, "spool.inbox.item.consumption.failed"),
-                Arguments.of(InboxItemStoreFailed.class, "spool.inbox.item.store.failed"),
-                Arguments.of(ItemPublishFailed.class, "spool.item.publish.failed"),
-                Arguments.of(SourceFetchFailed.class, "spool.source.fetch.failed"),
-                Arguments.of(SourceItemCaptureFailed.class, "spool.source.item.capture.failed"));
+                Arguments.of(EnvelopeQuarantined.class, "spool.envelope.quarantined"));
     }
 
     @ParameterizedTest

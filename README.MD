@@ -144,7 +144,7 @@ public record Envelope(
 ### Envelope Status Lifecycle
 
 ```
-CAPTURED ──► INGESTED ──► PERSISTED
+CAPTURED ──► PERSISTED
     │
     └──► QUARANTINED  (failed validation or exceeded retries)
 ```
@@ -152,8 +152,7 @@ CAPTURED ──► INGESTED ──► PERSISTED
 | Status | When |
 |---|---|
 | `CAPTURED` | Stored in the inbox by the Crawler. |
-| `INGESTED` | Picked up and being processed by the Ingester. |
-| `PERSISTED` | Successfully written to the data lake. |
+| `PERSISTED` | Written to the data lake: the janitor marks it when the ingester publishes `EnvelopePersisted`. |
 | `QUARANTINED` | Failed validation or exceeded retry limit. |
 
 ---

@@ -4,7 +4,6 @@ import software.spool.core.model.annotation.Delivery;
 import software.spool.core.model.SpoolFailedEvent;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.SpoolEvent;
-import software.spool.core.model.event.ItemPublished;
 import software.spool.core.model.quarantine.QuarantineLocation;
 import software.spool.core.model.quarantine.QuarantineReason;
 import software.spool.core.port.bus.DeliveryPolicy;
@@ -58,13 +57,6 @@ public record EnvelopeQuarantined(
         public EnvelopeQuarantined.Builder from(final SpoolEvent cause) {
             this.correlationId = cause.correlationId();
             this.causationId = cause.eventId();
-            return this;
-        }
-
-        public EnvelopeQuarantined.Builder from(final ItemPublished cause) {
-            this.correlationId = cause.correlationId();
-            this.causationId = cause.eventId();
-            this.idempotencyKey = cause.idempotencyKey();
             return this;
         }
 

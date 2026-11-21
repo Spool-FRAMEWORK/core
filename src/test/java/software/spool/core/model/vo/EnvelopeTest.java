@@ -24,14 +24,14 @@ class EnvelopeTest {
 
     @Test
     void withStatus_returnsNewEnvelopeWithUpdatedStatus() {
-        Envelope updated = aCapturedEnvelope().withStatus(EnvelopeStatus.INGESTED);
-        assertThat(updated.status()).isEqualTo(EnvelopeStatus.INGESTED);
+        Envelope updated = aCapturedEnvelope().withStatus(EnvelopeStatus.PERSISTED);
+        assertThat(updated.status()).isEqualTo(EnvelopeStatus.PERSISTED);
     }
 
     @Test
     void withStatus_doesNotMutateOriginal() {
         Envelope original = aCapturedEnvelope();
-        original.withStatus(EnvelopeStatus.INGESTED);
+        original.withStatus(EnvelopeStatus.PERSISTED);
         assertThat(original.status()).isEqualTo(EnvelopeStatus.CAPTURED);
     }
 

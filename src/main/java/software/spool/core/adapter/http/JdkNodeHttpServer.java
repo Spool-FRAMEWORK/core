@@ -15,17 +15,27 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Comparator;
+import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
+import java.net.URLDecoder;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
 /**
- * The node's HTTP server, on the JDK's {@code com.sun.net.httpserver}. A request is matched by its exact path and
- * method; a path nobody registered gets {@code 404} and a method the path does not take gets {@code 405}. Every
+ * The node's HTTP server, on the JDK's {@code com.sun.net.httpserver}. A request is matched by the shape of its path
+ * and its method: a route path may have variable parts, written {@code {name}}, and when several routes match, the
+ * one with more literal parts wins. A path nobody registered gets {@code 404} and a method the path does not take
+ * gets {@code 405}. Every
  * request goes through the access check of its route, and a route that fails answers {@code 500} without its
  * message, which is logged instead.
  */
 public final class JdkNodeHttpServer implements NodeHttpServer {
+    private static final String QUERY_PAIR_SEPARATOR = "&";
+    private static final String QUERY_VALUE_SEPARATOR = "=";
     private static final HttpResponse NOT_FOUND = HttpResponse.json(404, "{\"error\":\"not found\"}");
     private static final HttpResponse METHOD_NOT_ALLOWED = HttpResponse.json(405, "{\"error\":\"method not allowed\"}");
     private static final HttpResponse SERVER_ERROR = HttpResponse.json(500, "{\"error\":\"internal error\"}");
@@ -34,6 +44,7 @@ public final class JdkNodeHttpServer implements NodeHttpServer {
     private final Logger logger;
     private final RouteAccessGuard guard;
     private final Map<String, Map<HttpMethod, HttpRoute>> routesByPath = new ConcurrentHashMap<>();
+    private final Map<String, RoutePattern> patternsByPath = new ConcurrentHashMap<>();
     private HttpServer server;
 
     public JdkNodeHttpServer(int port) {
@@ -48,6 +59,7 @@ public final class JdkNodeHttpServer implements NodeHttpServer {
 
     @Override
     public void register(HttpRoute route) {
+        patternsByPath.computeIfAbsent(route.path(), RoutePattern::new);
         Map<HttpMethod, HttpRoute> byMethod = routesByPath.computeIfAbsent(route.path(), path -> new ConcurrentHashMap<>());
         if (byMethod.putIfAbsent(route.method(), route) != null) {
             throw new IllegalArgumentException("The node already has a route for " + route.method() + " " + route.path());
@@ -78,12 +90,19 @@ public final class JdkNodeHttpServer implements NodeHttpServer {
 
     private HttpResponse answer(HttpExchange exchange) {
         String path = exchange.getRequestURI().getPath();
-        Map<HttpMethod, HttpRoute> byMethod = routesByPath.get(path);
-        if (byMethod == null) return NOT_FOUND;
+        List<String> requestParts = RoutePattern.partsOf(exchange.getRequestURI().getRawPath()).stream()
+                .map(part -> URLDecoder.decode(part, StandardCharsets.UTF_8))
+                .toList();
+        Optional<Matched> matched = patternsByPath.values().stream()
+                .flatMap(pattern -> pattern.match(requestParts).map(values -> new Matched(pattern, values)).stream())
+                .max(Comparator.comparingLong(candidate -> candidate.pattern().literalParts()));
+        if (matched.isEmpty()) return NOT_FOUND;
+        Map<HttpMethod, HttpRoute> byMethod = routesByPath.get(matched.get().pattern().path());
         Optional<HttpRoute> route = methodOf(exchange).map(byMethod::get);
         if (route.isEmpty()) return METHOD_NOT_ALLOWED;
         try {
-            return guard.handle(route.get(), requestOf(exchange, route.get().method(), path));
+            return guard.handle(route.get(), requestOf(exchange, route.get().method(), path)
+                    .withPathParameters(matched.get().values()));
         } catch (Exception e) {
             logger.error("Route " + route.get().method() + " " + path + " failed", e);
             return SERVER_ERROR;
@@ -100,8 +119,25 @@ public final class JdkNodeHttpServer implements NodeHttpServer {
 
     private static HttpRequest requestOf(HttpExchange exchange, HttpMethod method, String path) throws IOException {
         try (InputStream body = exchange.getRequestBody()) {
-            return new HttpRequest(method, path, exchange.getRequestHeaders(), body.readAllBytes());
+            return new HttpRequest(method, path, exchange.getRequestHeaders(), body.readAllBytes(), Map.of(),
+                    queryParametersOf(exchange.getRequestURI().getRawQuery()));
         }
+    }
+
+    private static Map<String, List<String>> queryParametersOf(String rawQuery) {
+        if (rawQuery == null || rawQuery.isEmpty()) return Map.of();
+        Map<String, List<String>> parameters = new LinkedHashMap<>();
+        for (String pair : rawQuery.split(QUERY_PAIR_SEPARATOR)) {
+            if (pair.isEmpty()) continue;
+            String[] nameAndValue = pair.split(QUERY_VALUE_SEPARATOR, 2);
+            String value = nameAndValue.length > 1 ? nameAndValue[1] : "";
+            parameters.computeIfAbsent(URLDecoder.decode(nameAndValue[0], StandardCharsets.UTF_8), name -> new ArrayList<>())
+                    .add(URLDecoder.decode(value, StandardCharsets.UTF_8));
+        }
+        return parameters;
+    }
+
+    private record Matched(RoutePattern pattern, Map<String, String> values) {
     }
 
     private static void respond(HttpExchange exchange, HttpResponse response) throws IOException {

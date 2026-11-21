@@ -1,5 +1,8 @@
 package software.spool.core.adapter.memory;
 
+import software.spool.core.exception.QuarantineConflictException;
+import software.spool.core.model.quarantine.QuarantinePage;
+import software.spool.core.model.quarantine.QuarantinePageRequest;
 import software.spool.core.model.quarantine.QuarantineStatus;
 import software.spool.core.model.quarantine.QuarantinedRecord;
 import software.spool.core.model.vo.IdempotencyKey;
@@ -23,6 +26,14 @@ public class InMemoryQuarantineRepository implements QuarantineRepository {
     }
 
     @Override
+    public void resolve(QuarantinedRecord resolvedRecord) {
+        records.compute(resolvedRecord.idempotencyKey(), (key, kept) -> {
+            if (kept == null || kept.status() != QuarantineStatus.PENDING) throw notPending(key, kept);
+            return resolvedRecord;
+        });
+    }
+
+    @Override
     public Optional<QuarantinedRecord> find(IdempotencyKey idempotencyKey) {
         return Optional.ofNullable(records.get(idempotencyKey));
     }
@@ -33,6 +44,11 @@ public class InMemoryQuarantineRepository implements QuarantineRepository {
     }
 
     @Override
+    public QuarantinePage findByStatus(QuarantinePageRequest request) {
+        return QuarantinePage.of(records.values(), request);
+    }
+
+    @Override
     public Collection<QuarantinedRecord> findAll() {
         return List.copyOf(records.values());
     }
@@ -40,5 +56,11 @@ public class InMemoryQuarantineRepository implements QuarantineRepository {
     @Override
     public void delete(IdempotencyKey idempotencyKey) {
         records.remove(idempotencyKey);
+    }
+
+    private static QuarantineConflictException notPending(IdempotencyKey idempotencyKey, QuarantinedRecord kept) {
+        return new QuarantineConflictException(idempotencyKey, kept == null
+                ? idempotencyKey.value() + " is not in quarantine"
+                : idempotencyKey.value() + " was already resolved as " + kept.status());
     }
 }

@@ -6,6 +6,7 @@ import software.spool.core.model.EnvelopeStatus;
 import software.spool.core.model.quarantine.QuarantineLocation;
 import software.spool.core.model.quarantine.QuarantineReason;
 import software.spool.core.model.quarantine.QuarantineResolution;
+import software.spool.core.model.quarantine.Resolver;
 import software.spool.core.model.quarantine.QuarantineStatus;
 import software.spool.core.model.quarantine.QuarantinedRecord;
 import software.spool.core.model.vo.Envelope;
@@ -45,7 +46,7 @@ class QuarantineRecorderTest {
     @Test
     void record_keyWithAResolvedRecord_reopensIt() {
         repository.save(QuarantinedRecord.pending(envelope(), QuarantineLocation.inbox(), QuarantineReason.VALIDATION_FAILED,
-                List.of(), FIRST_TIME).resolve(QuarantineResolution.republished(FIRST_TIME)));
+                List.of(), FIRST_TIME).resolve(QuarantineResolution.republished(FIRST_TIME, Resolver.identified("ana", "people"))));
 
         recorder.record(envelope(), QuarantineLocation.inbox(), QuarantineReason.RETRIES_EXHAUSTED, List.of(), SECOND_TIME);
 

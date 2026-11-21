@@ -34,7 +34,7 @@ class QuarantinedRecordTest {
 
     @Test
     void resolve_pendingRecord_closesItsLastEntry() {
-        QuarantinedRecord resolved = pendingRecord().resolve(QuarantineResolution.republished(SECOND_TIME));
+        QuarantinedRecord resolved = pendingRecord().resolve(QuarantineResolution.republished(SECOND_TIME, Resolver.identified("ana", "people")));
 
         assertThat(resolved.status()).isEqualTo(QuarantineStatus.REPUBLISHED);
         assertThat(resolved.resolution().resolvedAt()).contains(SECOND_TIME);
@@ -44,7 +44,7 @@ class QuarantinedRecordTest {
     @Test
     void resolve_corrected_keepsTheKeyOfTheCorrectedEnvelope() {
         QuarantinedRecord resolved = pendingRecord()
-                .resolve(QuarantineResolution.corrected(SECOND_TIME, IdempotencyKey.of("corrected-key")));
+                .resolve(QuarantineResolution.corrected(SECOND_TIME, IdempotencyKey.of("corrected-key"), Resolver.identified("ana", "people")));
 
         assertThat(resolved.resolution()).isInstanceOfSatisfying(QuarantineResolution.Corrected.class,
                 corrected -> assertThat(corrected.correctedTo()).isEqualTo(IdempotencyKey.of("corrected-key")));
@@ -53,7 +53,7 @@ class QuarantinedRecordTest {
     @Test
     void resolve_bypassed_isBypassedWithItsReason() {
         QuarantinedRecord resolved = pendingRecord()
-                .resolve(QuarantineResolution.bypassed(SECOND_TIME, "price rule misconfigured"));
+                .resolve(QuarantineResolution.bypassed(SECOND_TIME, "price rule misconfigured", Resolver.identified("ana", "people")));
 
         assertThat(resolved.status()).isEqualTo(QuarantineStatus.BYPASSED);
         assertThat(resolved.resolution()).isInstanceOfSatisfying(QuarantineResolution.Bypassed.class,
@@ -62,16 +62,16 @@ class QuarantinedRecordTest {
 
     @Test
     void bypassed_blankReason_fails() {
-        assertThatThrownBy(() -> QuarantineResolution.bypassed(SECOND_TIME, " "))
+        assertThatThrownBy(() -> QuarantineResolution.bypassed(SECOND_TIME, " ", Resolver.identified("ana", "people")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("reason");
     }
 
     @Test
     void resolve_alreadyResolvedRecord_fails() {
-        QuarantinedRecord resolved = pendingRecord().resolve(QuarantineResolution.purged(SECOND_TIME));
+        QuarantinedRecord resolved = pendingRecord().resolve(QuarantineResolution.purged(SECOND_TIME, Resolver.identified("ana", "people")));
 
-        assertThatThrownBy(() -> resolved.resolve(QuarantineResolution.republished(THIRD_TIME)))
+        assertThatThrownBy(() -> resolved.resolve(QuarantineResolution.republished(THIRD_TIME, Resolver.identified("ana", "people"))))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("k1")
                 .hasMessageContaining("PURGED");
@@ -80,7 +80,7 @@ class QuarantinedRecordTest {
     @Test
     void reenter_resolvedRecord_isPendingAgainWithTwoEntries() {
         QuarantinedRecord reopened = pendingRecord()
-                .resolve(QuarantineResolution.republished(SECOND_TIME))
+                .resolve(QuarantineResolution.republished(SECOND_TIME, Resolver.identified("ana", "people")))
                 .reenter(QuarantineReason.RETRIES_EXHAUSTED, List.of(), THIRD_TIME);
 
         assertThat(reopened.status()).isEqualTo(QuarantineStatus.PENDING);

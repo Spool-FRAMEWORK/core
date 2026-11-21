@@ -5,6 +5,7 @@ import software.spool.core.model.EnvelopeStatus;
 import software.spool.core.model.quarantine.QuarantineLocation;
 import software.spool.core.model.quarantine.QuarantineReason;
 import software.spool.core.model.quarantine.QuarantineResolution;
+import software.spool.core.model.quarantine.Resolver;
 import software.spool.core.model.quarantine.QuarantinedRecord;
 import software.spool.core.model.vo.Envelope;
 import software.spool.core.model.vo.EventMetadata;
@@ -42,7 +43,7 @@ class QuarantinedRecordJsonTest {
         PartitionKey partition = PartitionKey.ofEntriesWithoutDate().with("source", "boe").build();
         QuarantinedRecord original = QuarantinedRecord.pending(envelope(), QuarantineLocation.bronze(partition),
                         QuarantineReason.VALIDATION_FAILED, List.of(), FIRST_TIME)
-                .resolve(QuarantineResolution.corrected(SECOND_TIME, IdempotencyKey.of("corrected-key")))
+                .resolve(QuarantineResolution.corrected(SECOND_TIME, IdempotencyKey.of("corrected-key"), Resolver.identified("ana", "people")))
                 .reenter(QuarantineReason.VALIDATION_FAILED, List.of("again"), SECOND_TIME);
 
         QuarantinedRecord read = roundTrip(original);
@@ -55,11 +56,26 @@ class QuarantinedRecordJsonTest {
     void roundTrip_bypassedRecord_keepsItsReason() {
         QuarantinedRecord original = QuarantinedRecord.pending(envelope(), QuarantineLocation.inbox(),
                         QuarantineReason.VALIDATION_FAILED, List.of(), FIRST_TIME)
-                .resolve(QuarantineResolution.bypassed(SECOND_TIME, "price rule misconfigured"));
+                .resolve(QuarantineResolution.bypassed(SECOND_TIME, "price rule misconfigured", Resolver.identified("ana", "people")));
 
         QuarantinedRecord read = roundTrip(original);
 
-        assertThat(read.resolution()).isEqualTo(QuarantineResolution.bypassed(SECOND_TIME, "price rule misconfigured"));
+        assertThat(read.resolution()).isEqualTo(QuarantineResolution.bypassed(SECOND_TIME, "price rule misconfigured", Resolver.identified("ana", "people")));
+    }
+
+    @Test
+    void read_recordResolvedBeforeResolversWereKept_hasAnUnknownResolver() {
+        QuarantinedRecord resolved = QuarantinedRecord.pending(envelope(), QuarantineLocation.inbox(),
+                        QuarantineReason.VALIDATION_FAILED, List.of(), FIRST_TIME)
+                .resolve(QuarantineResolution.purged(SECOND_TIME, Resolver.identified("ana", "people")));
+        String withoutResolver = new String(RecordSerializerFactory.<QuarantinedRecord>record().serialize(resolved), StandardCharsets.UTF_8)
+                .replaceAll(",\"by\":\\{[^}]*\\}", "");
+
+        QuarantinedRecord read = PayloadDeserializerFactory.json().as(QuarantinedRecord.class)
+                .deserialize(withoutResolver.getBytes(StandardCharsets.UTF_8));
+
+        assertThat(withoutResolver).doesNotContain("\"by\"");
+        assertThat(read.resolution()).isEqualTo(QuarantineResolution.purged(SECOND_TIME, Resolver.unknown()));
     }
 
     private static QuarantinedRecord roundTrip(QuarantinedRecord quarantinedRecord) {

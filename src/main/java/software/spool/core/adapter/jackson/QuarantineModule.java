@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import software.spool.core.model.quarantine.QuarantineLocation;
 import software.spool.core.model.quarantine.QuarantineResolution;
+import software.spool.core.model.quarantine.Resolver;
 
 /**
  * Tells Jackson which variant of each quarantine type a JSON object is, through a {@code type} field, so the model
@@ -16,6 +17,7 @@ final class QuarantineModule extends SimpleModule {
         super("spool-quarantine");
         setMixInAnnotation(QuarantineLocation.class, LocationMixin.class);
         setMixInAnnotation(QuarantineResolution.class, ResolutionMixin.class);
+        setMixInAnnotation(Resolver.class, ResolverMixin.class);
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -35,5 +37,13 @@ final class QuarantineModule extends SimpleModule {
             @JsonSubTypes.Type(value = QuarantineResolution.Purged.class, name = "PURGED")
     })
     private interface ResolutionMixin {
+    }
+
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+    @JsonSubTypes({
+            @JsonSubTypes.Type(value = Resolver.Identified.class, name = "IDENTIFIED"),
+            @JsonSubTypes.Type(value = Resolver.Unknown.class, name = "UNKNOWN")
+    })
+    private interface ResolverMixin {
     }
 }

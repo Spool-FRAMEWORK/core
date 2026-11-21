@@ -3,16 +3,16 @@ package software.spool.core.adapter.memory;
 import software.spool.core.model.vo.Envelope;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.vo.PartitionKey;
-import software.spool.core.port.datalake.BronzeRepository;
+import software.spool.core.port.datalake.BronzeEnvelopeRemover;
+import software.spool.core.port.datalake.BronzeWriter;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * {@link BronzeRepository} kept in memory, for tests and single-process runs. Its records are lost when the process
- * stops.
+ * Bronze layer kept in memory, for tests and single-process runs. Its records are lost when the process stops.
  */
-public class InMemoryBronzeRepository implements BronzeRepository {
+public class InMemoryBronze implements BronzeWriter, BronzeEnvelopeRemover {
     private final ConcurrentHashMap<Location, Envelope> records = new ConcurrentHashMap<>();
 
     @Override
@@ -21,7 +21,7 @@ public class InMemoryBronzeRepository implements BronzeRepository {
     }
 
     @Override
-    public void delete(PartitionKey partition, IdempotencyKey idempotencyKey) {
+    public void remove(PartitionKey partition, IdempotencyKey idempotencyKey) {
         records.remove(new Location(partition, idempotencyKey));
     }
 

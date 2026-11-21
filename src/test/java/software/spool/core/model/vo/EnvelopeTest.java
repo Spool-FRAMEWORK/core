@@ -46,4 +46,24 @@ class EnvelopeTest {
         original.retry();
         assertThat(original.retries()).isEqualTo(0);
     }
+
+    @Test
+    void header_keepsEverythingButThePayload() {
+        Envelope envelope = aCapturedEnvelope();
+
+        EnvelopeHeader header = envelope.header();
+
+        assertThat(header).isEqualTo(new EnvelopeHeader(envelope.idempotencyKey(), envelope.metadata(), envelope.mediaType(),
+                envelope.status(), envelope.retries(), envelope.capturedAt(), envelope.updatedAt()));
+    }
+
+    @Test
+    void of_headerAndPayload_rebuildsTheEnvelope() {
+        Envelope envelope = aCapturedEnvelope();
+
+        Envelope rebuilt = Envelope.of(envelope.header(), envelope.payload());
+
+        assertThat(rebuilt.header()).isEqualTo(envelope.header());
+        assertThat(rebuilt.payload()).isEqualTo(envelope.payload());
+    }
 }

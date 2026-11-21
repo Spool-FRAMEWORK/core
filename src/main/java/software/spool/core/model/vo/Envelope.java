@@ -24,6 +24,15 @@ public record Envelope(
         return updatedAt != null ? updatedAt : capturedAt;
     }
 
+    public EnvelopeHeader header() {
+        return new EnvelopeHeader(idempotencyKey, metadata, mediaType, status, retries, capturedAt, updatedAt);
+    }
+
+    public static Envelope of(EnvelopeHeader header, byte[] payload) {
+        return new Envelope(header.idempotencyKey(), header.metadata(), header.mediaType(), payload, header.status(),
+                header.retries(), header.capturedAt(), header.updatedAt());
+    }
+
     public Envelope withStatus(final EnvelopeStatus status) {
         return new Envelope(
                 this.idempotencyKey,

@@ -52,6 +52,7 @@ class AnnotationEventRouterTest {
                 Arguments.of(EnvelopeQuarantined.class, DeliveryPolicy.EVERY_SUBSCRIBER),
                 Arguments.of(EnvelopeRepublished.class, DeliveryPolicy.EVERY_SUBSCRIBER),
                 Arguments.of(EnvelopePurged.class, DeliveryPolicy.EVERY_SUBSCRIBER),
+                Arguments.of(EnvelopesMounted.class, DeliveryPolicy.EVERY_SUBSCRIBER),
                 Arguments.of(DataLakePersistFailed.class, DeliveryPolicy.EVERY_SUBSCRIBER),
                 Arguments.of(SourcePayloadCaptured.class, DeliveryPolicy.EVERY_SUBSCRIBER),
                 Arguments.of(PatientAdmitted.class, DeliveryPolicy.SINGLE_SUBSCRIBER),

@@ -3,6 +3,7 @@ package software.spool.core.adapter.jackson;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 final class JacksonMapperFactory {
@@ -28,6 +29,7 @@ final class JacksonMapperFactory {
     private static ObjectMapper buildMapper(ObjectMapper mapper) {
         return mapper
                 .registerModule(new JavaTimeModule())
+                .registerModule(new Jdk8Module())
                 .registerModule(new QuarantineModule())
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);

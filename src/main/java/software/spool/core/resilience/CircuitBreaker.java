@@ -78,7 +78,7 @@ public record CircuitBreaker(
                     evaluated.snapshot().failures(),
                     evaluated.snapshot().totalCalls(),
                     failureRate(evaluated));
-            throw new CircuitBreakerOpenException(id);
+            throw new CircuitBreakerOpenException(id, evaluated.openUntil());
         }
 
         if (evaluated.status() == CircuitBreakerStatus.HALF_OPEN

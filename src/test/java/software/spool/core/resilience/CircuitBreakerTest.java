@@ -154,6 +154,29 @@ class CircuitBreakerTest {
         assertThat(defaults.halfOpenPermits()).isEqualTo(CircuitBreakerPolicy.DEFAULT_HALF_OPEN_CALLS);
     }
 
+    @Test
+    void execute_whileOpen_isRejectedSayingWhenTheCircuitLetsCallsThroughAgain() {
+        MovingClock clock = new MovingClock(Instant.parse("2026-11-22T10:00:00Z"));
+        CircuitBreaker breaker = onClock(clock, 1);
+        breaker.holdOpenUntil(Instant.parse("2026-11-22T10:00:30Z"));
+
+        assertThatThrownBy(() -> breaker.execute(() -> "too soon"))
+                .isInstanceOfSatisfying(CircuitBreakerOpenException.class, open ->
+                        assertThat(open.openUntil()).contains(Instant.parse("2026-11-22T10:00:30Z")));
+    }
+
+    @Test
+    void acquirePermit_whenTheTrialCallsAreTaken_isRejectedWithoutATime() {
+        MovingClock clock = new MovingClock(Instant.parse("2026-11-22T10:00:00Z"));
+        CircuitBreaker breaker = onClock(clock, 1);
+        breaker.holdOpenUntil(clock.instant().plusSeconds(1));
+        clock.advance(Duration.ofSeconds(1));
+        breaker.acquirePermit();
+
+        assertThatThrownBy(breaker::acquirePermit)
+                .isInstanceOfSatisfying(CircuitBreakerOpenException.class, open -> assertThat(open.openUntil()).isEmpty());
+    }
+
     private static CircuitBreaker onClock(MovingClock clock, int halfOpenPermits) {
         CircuitBreakerPolicy policy = CircuitBreakerPolicy.countBased()
                 .withFailureRateThreshold(0.5f)

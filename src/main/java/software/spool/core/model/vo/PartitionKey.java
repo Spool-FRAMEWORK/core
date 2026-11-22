@@ -1,6 +1,7 @@
 package software.spool.core.model.vo;
 
 import java.util.Objects;
+import java.util.Set;
 
 public record PartitionKey(String value) {
     public PartitionKey {
@@ -24,7 +25,6 @@ public record PartitionKey(String value) {
     }
 
     public boolean contains(PartitionKey scope) {
-        return KeyEntries.split(scope.value()).stream()
-                .allMatch(entry -> this.value().contains(entry));
+        return Set.copyOf(KeyEntries.split(value)).containsAll(KeyEntries.split(scope.value()));
     }
 }

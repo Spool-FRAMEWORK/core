@@ -35,6 +35,15 @@ class InMemoryEnvelopeHeaderStoreTest {
     }
 
     @Test
+    void findIn_partition_leavesOutAPartitionWhoseValueOnlyStartsTheSame() {
+        store.write(PartitionKey.ofEntriesWithoutDate().with("day", "1").build(), header("k1"));
+        store.write(PartitionKey.ofEntriesWithoutDate().with("day", "10").build(), header("k2"));
+
+        assertThat(store.findIn(PartitionKey.ofEntriesWithoutDate().with("day", "1").build()))
+                .containsExactly(header("k1"));
+    }
+
+    @Test
     void remove_storedHeader_removesItOnlyFromThatPartition() {
         store.write(PAYMENTS, header("k1"));
 

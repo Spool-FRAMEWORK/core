@@ -11,6 +11,8 @@ import java.util.Optional;
  * @param status    how the piece is doing
  * @param reason    why it is not healthy, when it is not
  * @param checkedAt when its health was worked out
+ * @param hasCheck  whether the piece has a check of its own; without one it is judged only by the calls to it
  */
-public record PieceHealth(String piece, String type, HealthStatus status, Optional<String> reason, Instant checkedAt) {
+public record PieceHealth(String piece, String type, HealthStatus status, Optional<String> reason, Instant checkedAt,
+                          boolean hasCheck) {
 }

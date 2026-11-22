@@ -42,6 +42,6 @@ class ModuleHealthPayloadTest {
     }
 
     private static PieceHealth piece(String name, HealthStatus status) {
-        return new PieceHealth(name, "FILE_SYSTEM", status, Optional.empty(), NOW);
+        return new PieceHealth(name, "FILE_SYSTEM", status, Optional.empty(), NOW, false);
     }
 }

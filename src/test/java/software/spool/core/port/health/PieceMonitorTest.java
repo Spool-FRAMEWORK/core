@@ -119,6 +119,8 @@ class PieceMonitorTest {
     void hasCheck_saysWhetherThePieceHasACheckOfItsOwn() {
         assertThat(monitor(Optional.empty()).hasCheck()).isFalse();
         assertThat(monitor(Optional.of(() -> HealthCheck.healthy("lake"))).hasCheck()).isTrue();
+        assertThat(monitor(Optional.empty()).health().hasCheck()).isFalse();
+        assertThat(monitor(Optional.of(() -> HealthCheck.healthy("lake"))).health().hasCheck()).isTrue();
     }
 
     @Test

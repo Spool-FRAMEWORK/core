@@ -127,10 +127,10 @@ public final class PieceMonitor {
             return healthOf(check.get(), now);
         }
         if (lastCallFailure.isPresent()) {
-            return new PieceHealth(piece, type, HealthStatus.UNHEALTHY, lastCallFailure, now);
+            return new PieceHealth(piece, type, HealthStatus.UNHEALTHY, lastCallFailure, now, hasCheck());
         }
         return check.map(result -> healthOf(result, now))
-                .orElseGet(() -> new PieceHealth(piece, type, HealthStatus.HEALTHY, Optional.empty(), now));
+                .orElseGet(() -> new PieceHealth(piece, type, HealthStatus.HEALTHY, Optional.empty(), now, hasCheck()));
     }
 
     private CheckResult checkDueAt(HealthProbe healthProbe) {
@@ -157,7 +157,7 @@ public final class PieceMonitor {
     }
 
     private PieceHealth healthOf(CheckResult check, Instant now) {
-        return new PieceHealth(piece, type, check.status(), check.reason(), now);
+        return new PieceHealth(piece, type, check.status(), check.reason(), now, hasCheck());
     }
 
     private static String reasonOf(Exception e) {

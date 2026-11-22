@@ -1,12 +1,11 @@
 package software.spool.core.port.health;
 
 import org.junit.jupiter.api.Test;
+import software.spool.core.testing.MovingClock;
 
 import java.io.IOException;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -168,32 +167,5 @@ class PieceMonitorTest {
 
     private PieceMonitor monitor(Optional<HealthProbe> probe) {
         return new PieceMonitor("lake", "FILE_SYSTEM", probe, POLICY, clock);
-    }
-
-    private static final class MovingClock extends Clock {
-        private Instant now;
-
-        private MovingClock(Instant now) {
-            this.now = now;
-        }
-
-        void advance(Duration duration) {
-            now = now.plus(duration);
-        }
-
-        @Override
-        public ZoneOffset getZone() {
-            return ZoneOffset.UTC;
-        }
-
-        @Override
-        public Clock withZone(java.time.ZoneId zone) {
-            return this;
-        }
-
-        @Override
-        public Instant instant() {
-            return now;
-        }
     }
 }

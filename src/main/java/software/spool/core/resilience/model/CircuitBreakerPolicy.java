@@ -11,6 +11,22 @@ public record CircuitBreakerPolicy(
         Duration cooldown,
         int halfOpenPermits
 ) {
+    public static final float DEFAULT_FAILURE_RATE = 0.5f;
+    public static final int DEFAULT_MINIMUM_CALLS = 5;
+    public static final Duration DEFAULT_WINDOW = Duration.ofMinutes(1);
+    public static final Duration DEFAULT_OPEN_FOR = Duration.ofSeconds(30);
+    public static final int DEFAULT_HALF_OPEN_CALLS = 1;
+
+    public static CircuitBreakerPolicy defaults() {
+        return timeBased()
+                .withFailureRateThreshold(DEFAULT_FAILURE_RATE)
+                .withMinimumCalls(DEFAULT_MINIMUM_CALLS)
+                .withSamplingWindow(DEFAULT_WINDOW)
+                .withCooldown(DEFAULT_OPEN_FOR)
+                .withHalfOpenPermits(DEFAULT_HALF_OPEN_CALLS)
+                .build();
+    }
+
     public static Builder timeBased() {
         return new Builder(SlidingWindowType.TIME_BASED);
     }

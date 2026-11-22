@@ -12,8 +12,8 @@ public class TransitionEvaluator {
     public CircuitBreakerState evaluateOnInitialize(CircuitBreakerState state,
                                                     CircuitBreakerPolicy policy,
                                                     Instant now) {
-        if (state.status() == CircuitBreakerStatus.OPEN && state.isOpenExpired(now, policy.cooldown())) {
-            return state.toHalfOpen();
+        if (state.status() == CircuitBreakerStatus.OPEN && state.isOpenExpired(now)) {
+            return state.toHalfOpen(now);
         }
         return state;
     }
@@ -22,7 +22,7 @@ public class TransitionEvaluator {
                                                  CircuitBreakerPolicy policy,
                                                  Instant now) {
         CircuitBreakerSnapshot updated = state.snapshot().withSuccess(now, policy);
-        CircuitBreakerState next = new CircuitBreakerState(updated, state.status(), state.openedAt());
+        CircuitBreakerState next = new CircuitBreakerState(updated, state.status(), state.openUntil());
 
         if (state.status() == CircuitBreakerStatus.HALF_OPEN) {
             if (updated.successes() >= policy.halfOpenPermits()) {
@@ -37,14 +37,14 @@ public class TransitionEvaluator {
                                                  CircuitBreakerPolicy policy,
                                                  Instant now) {
         CircuitBreakerSnapshot updated = state.snapshot().withFailure(now, policy);
-        CircuitBreakerState next = new CircuitBreakerState(updated, state.status(), state.openedAt());
+        CircuitBreakerState next = new CircuitBreakerState(updated, state.status(), state.openUntil());
 
         if (state.status() == CircuitBreakerStatus.HALF_OPEN) {
-            return next.trip(now);
+            return next.trip(now.plus(policy.cooldown()));
         }
 
         if (state.status() == CircuitBreakerStatus.CLOSED && policy.shouldTrip(updated)) {
-            return next.trip(now);
+            return next.trip(now.plus(policy.cooldown()));
         }
 
         return next;

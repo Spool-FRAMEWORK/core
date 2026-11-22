@@ -9,16 +9,24 @@ import software.spool.core.resilience.model.CircuitBreakerStatus;
 import software.spool.core.resilience.port.CircuitBreakerStateStore;
 import software.spool.core.port.logging.Logger;
 
+import java.time.Clock;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 public record CircuitBreaker(
         String id,
         CircuitBreakerPolicy policy,
         TransitionEvaluator evaluator,
-        CircuitBreakerStateStore store
+        CircuitBreakerStateStore store,
+        Clock clock
 ) {
     private static final Logger LOG = LoggerFactory.getLogger(CircuitBreaker.class);
+
+    public CircuitBreaker(String id, CircuitBreakerPolicy policy, TransitionEvaluator evaluator,
+                          CircuitBreakerStateStore store) {
+        this(id, policy, evaluator, store, Clock.systemUTC());
+    }
 
     public <T> T execute(Callable<T> action) throws Exception {
         acquirePermit();
@@ -38,8 +46,24 @@ public record CircuitBreaker(
         return store.load(id).status();
     }
 
+    /** The time the circuit lets calls through again, while it is open. */
+    public Optional<Instant> openUntil() {
+        CircuitBreakerState current = store.load(id);
+        return current.status() == CircuitBreakerStatus.OPEN
+                ? current.openUntil().filter(clock.instant()::isBefore)
+                : Optional.empty();
+    }
+
+    /** Opens the circuit until the given time, such as when the piece asks to wait, unless it is open for longer. */
+    public void holdOpenUntil(Instant until) {
+        CircuitBreakerState current = store.load(id);
+        Instant later = current.openUntil().filter(until::isBefore).orElse(until);
+        store.compareAndSet(current.snapshot().version(), current.trip(later));
+        LOG.warn("RESILIENCE - CB · {} » OPEN until {}", id, later);
+    }
+
     public void acquirePermit() {
-        Instant now = Instant.now();
+        Instant now = clock.instant();
         CircuitBreakerState current = store.load(id);
         CircuitBreakerState evaluated = evaluator.evaluateOnInitialize(current, policy, now);
 
@@ -65,10 +89,15 @@ public record CircuitBreaker(
                     policy.halfOpenPermits());
             throw new CircuitBreakerOpenException(id);
         }
+
+        if (evaluated.status() == CircuitBreakerStatus.HALF_OPEN) {
+            store.compareAndSet(evaluated.snapshot().version(),
+                    new CircuitBreakerState(evaluated.snapshot().withHalfOpenAttempt(), evaluated.status(), evaluated.openUntil()));
+        }
     }
 
     public void onSuccess() {
-        Instant now = Instant.now();
+        Instant now = clock.instant();
         CircuitBreakerState current = store.load(id);
         CircuitBreakerState next = evaluator.evaluateOnSuccess(current, policy, now);
         store.compareAndSet(current.snapshot().version(), next);
@@ -86,7 +115,7 @@ public record CircuitBreaker(
     }
 
     public void onFailure() {
-        Instant now = Instant.now();
+        Instant now = clock.instant();
         CircuitBreakerState current = store.load(id);
         CircuitBreakerState next = evaluator.evaluateOnFailure(current, policy, now);
         store.compareAndSet(current.snapshot().version(), next);

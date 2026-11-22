@@ -37,7 +37,7 @@ public class InMemoryCircuitBreakerStateStore implements CircuitBreakerStateStor
 
     private CircuitBreakerState initialState(String id) {
         CircuitBreakerSnapshot snap = new CircuitBreakerSnapshot(
-                id, 0, 0, 0, Instant.now(), new ArrayDeque<>(), 0L
+                id, 0, 0, 0, Instant.EPOCH, new ArrayDeque<>(), 0L
         );
         return new CircuitBreakerState(snap, CircuitBreakerStatus.CLOSED, Optional.empty());
     }

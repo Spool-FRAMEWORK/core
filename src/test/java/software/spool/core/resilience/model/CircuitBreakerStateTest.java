@@ -2,7 +2,6 @@ package software.spool.core.resilience.model;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.Optional;
@@ -16,40 +15,42 @@ class CircuitBreakerStateTest {
         return new CircuitBreakerState(snap, CircuitBreakerStatus.CLOSED, Optional.empty());
     }
 
-    private CircuitBreakerState openState(Instant openedAt) {
+    private CircuitBreakerState openState(Instant openUntil) {
         CircuitBreakerSnapshot snap = new CircuitBreakerSnapshot("test", 5, 0, 0, Instant.now(), new ArrayDeque<>(), 0L);
-        return new CircuitBreakerState(snap, CircuitBreakerStatus.OPEN, Optional.of(openedAt));
+        return new CircuitBreakerState(snap, CircuitBreakerStatus.OPEN, Optional.of(openUntil));
     }
 
     @Test
     void trip_closedState_transitionsToOpen() {
-        CircuitBreakerState tripped = closedState().trip(Instant.now());
+        Instant until = Instant.now().plusSeconds(30);
+        CircuitBreakerState tripped = closedState().trip(until);
         assertThat(tripped.status()).isEqualTo(CircuitBreakerStatus.OPEN);
-        assertThat(tripped.openedAt()).isPresent();
+        assertThat(tripped.openUntil()).contains(until);
     }
 
     @Test
     void reset_openState_transitionsToClosed() {
         CircuitBreakerState reset = openState(Instant.now().minusSeconds(60)).reset(Instant.now());
         assertThat(reset.status()).isEqualTo(CircuitBreakerStatus.CLOSED);
-        assertThat(reset.openedAt()).isEmpty();
+        assertThat(reset.openUntil()).isEmpty();
     }
 
     @Test
     void toHalfOpen_openExpired_transitionsToHalfOpen() {
-        CircuitBreakerState halfOpen = openState(Instant.now().minusSeconds(60)).toHalfOpen();
+        CircuitBreakerState halfOpen = openState(Instant.now().minusSeconds(60)).toHalfOpen(Instant.now());
         assertThat(halfOpen.status()).isEqualTo(CircuitBreakerStatus.HALF_OPEN);
+        assertThat(halfOpen.snapshot().totalCalls()).isZero();
     }
 
     @Test
-    void isOpenExpired_withinCooldown_returnsFalse() {
+    void isOpenExpired_beforeTheTimeItOpensUntil_returnsFalse() {
         Instant now = Instant.now();
-        assertThat(openState(now.minusSeconds(10)).isOpenExpired(now, Duration.ofSeconds(30))).isFalse();
+        assertThat(openState(now.plusSeconds(20)).isOpenExpired(now)).isFalse();
     }
 
     @Test
-    void isOpenExpired_pastCooldown_returnsTrue() {
+    void isOpenExpired_fromTheTimeItOpensUntil_returnsTrue() {
         Instant now = Instant.now();
-        assertThat(openState(now.minusSeconds(60)).isOpenExpired(now, Duration.ofSeconds(30))).isTrue();
+        assertThat(openState(now).isOpenExpired(now)).isTrue();
     }
 }

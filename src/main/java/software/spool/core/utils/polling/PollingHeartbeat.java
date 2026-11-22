@@ -29,7 +29,7 @@ public class PollingHeartbeat implements ModuleHeartBeat {
                     System.out.println(e.getMessage());
                 }
             },
-            polling.policy(),
+            polling.schedule(),
             token
         );
     }

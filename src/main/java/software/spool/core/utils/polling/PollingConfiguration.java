@@ -1,14 +1,20 @@
 package software.spool.core.utils.polling;
 
+import software.spool.core.model.schedule.Schedule;
+
 import java.time.Duration;
 
-public record PollingConfiguration(PollingScheduler scheduler, PollingPolicy policy) {
+public record PollingConfiguration(PollingScheduler scheduler, Schedule schedule) {
+    public static PollingConfiguration of(Schedule schedule) {
+        return new PollingConfiguration(new ThreadedPollingScheduler(), schedule);
+    }
+
     public static PollingConfiguration once() {
-        return new PollingConfiguration(new ThreadedPollingScheduler(), PollingPolicy.ONCE);
+        return of(Schedule.once());
     }
 
     public static PollingConfiguration every(Duration interval) {
-        return new PollingConfiguration(new ThreadedPollingScheduler(), PollingPolicy.every(interval));
+        return of(Schedule.every(interval));
     }
 
     public static PollingConfiguration defaults() {

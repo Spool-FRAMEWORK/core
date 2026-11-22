@@ -1,6 +1,9 @@
 package software.spool.core.port.health;
 
 import org.junit.jupiter.api.Test;
+import software.spool.core.exception.PieceAsksToWaitException;
+import software.spool.core.resilience.exception.CircuitBreakerOpenException;
+import software.spool.core.resilience.model.CircuitBreakerPolicy;
 import software.spool.core.testing.MovingClock;
 
 import java.io.IOException;
@@ -163,6 +166,86 @@ class PieceMonitorTest {
         assertThatThrownBy(() -> monitor.run(() -> monitor.given(input).forEach(value -> {
         }))).isInstanceOf(IllegalStateException.class).hasMessage("the source could not be read");
         assertThat(monitor.health().status()).isEqualTo(HealthStatus.HEALTHY);
+    }
+
+    @Test
+    void call_whileTheCircuitIsOpen_isRejectedWithoutReachingThePiece() {
+        PieceMonitor monitor = monitorTrippingAfter(2);
+        failTimes(monitor, 2);
+        AtomicInteger reached = new AtomicInteger();
+
+        assertThatThrownBy(() -> monitor.call(reached::incrementAndGet)).isInstanceOf(CircuitBreakerOpenException.class);
+        assertThat(reached).hasValue(0);
+    }
+
+    @Test
+    void health_whileTheCircuitIsOpen_isUnhealthyWithTheTimeItOpensAgain() {
+        PieceMonitor monitor = monitorTrippingAfter(2);
+        failTimes(monitor, 2);
+
+        PieceHealth health = monitor.health();
+
+        assertThat(health.status()).isEqualTo(HealthStatus.UNHEALTHY);
+        assertThat(health.reason()).hasValueSatisfying(reason ->
+                assertThat(reason).contains("circuit open until 2026-11-22T10:00:30Z").contains("HTTP 500"));
+    }
+
+    @Test
+    void call_whenThePieceAsksToWait_opensTheCircuitUntilThatTimeAndThenLetsATrialCallThrough() throws Exception {
+        PieceMonitor monitor = monitor(Optional.empty());
+        Instant until = clock.instant().plusSeconds(3);
+
+        assertThatThrownBy(() -> monitor.call(() -> {
+            throw new PieceAsksToWaitException("orders-api", until);
+        })).isInstanceOf(PieceAsksToWaitException.class);
+        clock.advance(Duration.ofSeconds(2));
+        assertThatThrownBy(() -> monitor.call(() -> "too soon")).isInstanceOf(CircuitBreakerOpenException.class);
+        assertThat(monitor.health().reason()).hasValueSatisfying(reason -> assertThat(reason).contains("2026-11-22T10:00:03Z"));
+        clock.advance(Duration.ofSeconds(1));
+
+        assertThat(monitor.call(() -> "trial")).isEqualTo("trial");
+        assertThat(monitor.health().status()).isEqualTo(HealthStatus.HEALTHY);
+    }
+
+    @Test
+    void call_endedInAnAnswerOfThePiece_doesNotCountForTheCircuit() throws Exception {
+        PieceMonitor monitor = monitorTrippingAfter(2);
+        for (int i = 0; i < 2; i++) {
+            assertThatThrownBy(() -> monitor.call(() -> {
+                throw new IllegalArgumentException("already received");
+            }, List.of(IllegalArgumentException.class)));
+        }
+
+        assertThat(monitor.call(() -> "still called")).isEqualTo("still called");
+    }
+
+    @Test
+    void stream_isOneCall_soATrialCallReadsAllItsElements() {
+        PieceMonitor monitor = monitorTrippingAfter(2);
+        failTimes(monitor, 2);
+        clock.advance(Duration.ofSeconds(30));
+
+        assertThat(monitor.stream(() -> Stream.of("a", "b", "c")).toList()).containsExactly("a", "b", "c");
+        assertThat(monitor.health().status()).isEqualTo(HealthStatus.HEALTHY);
+    }
+
+    private PieceMonitor monitorTrippingAfter(int calls) {
+        CircuitBreakerPolicy circuit = CircuitBreakerPolicy.timeBased()
+                .withFailureRateThreshold(1.0f)
+                .withMinimumCalls(calls)
+                .withSamplingWindow(Duration.ofMinutes(1))
+                .withCooldown(Duration.ofSeconds(30))
+                .withHalfOpenPermits(1)
+                .build();
+        return new PieceMonitor("orders-api", "HTTP", Optional.empty(), POLICY, circuit, clock);
+    }
+
+    private static void failTimes(PieceMonitor monitor, int times) {
+        for (int i = 0; i < times; i++) {
+            assertThatThrownBy(() -> monitor.run(() -> {
+                throw new IllegalStateException("HTTP 500");
+            })).isInstanceOf(IllegalStateException.class);
+        }
     }
 
     private PieceMonitor monitor(Optional<HealthProbe> probe) {

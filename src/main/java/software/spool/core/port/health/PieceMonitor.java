@@ -1,5 +1,11 @@
 package software.spool.core.port.health;
 
+import software.spool.core.exception.PieceAsksToWaitException;
+import software.spool.core.resilience.CircuitBreaker;
+import software.spool.core.resilience.adapter.InMemoryCircuitBreakerStateStore;
+import software.spool.core.resilience.control.TransitionEvaluator;
+import software.spool.core.resilience.model.CircuitBreakerPolicy;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -17,6 +23,10 @@ import java.util.stream.StreamSupport;
  *
  * <p>A piece is unhealthy while its last call failed or its check fails, and degraded when its check takes longer
  * than its policy allows. The check runs when the health is asked, at most once per interval of its policy.</p>
+ *
+ * <p>Each piece has a circuit: when its failures reach the rate of its circuit policy, or the piece asks to wait,
+ * calls are rejected without reaching it until the circuit lets them through again, and the piece is unhealthy
+ * meanwhile.</p>
  */
 public final class PieceMonitor {
     private final String piece;
@@ -24,19 +34,32 @@ public final class PieceMonitor {
     private final Optional<HealthProbe> probe;
     private final PieceCheckPolicy policy;
     private final Clock clock;
+    private final CircuitBreaker circuit;
     private volatile Optional<String> lastCallFailure = Optional.empty();
     private volatile Optional<CheckResult> lastCheck = Optional.empty();
 
     public PieceMonitor(String piece, String type, Optional<HealthProbe> probe, PieceCheckPolicy policy, Clock clock) {
+        this(piece, type, probe, policy, CircuitBreakerPolicy.defaults(), clock);
+    }
+
+    public PieceMonitor(String piece, String type, Optional<HealthProbe> probe, PieceCheckPolicy policy,
+                        CircuitBreakerPolicy circuitPolicy, Clock clock) {
         this.piece = piece;
         this.type = type;
         this.probe = probe;
         this.policy = policy;
         this.clock = clock;
+        this.circuit = new CircuitBreaker(piece, circuitPolicy, new TransitionEvaluator(),
+                new InMemoryCircuitBreakerStateStore(), clock);
     }
 
     public static PieceMonitor of(String piece, String type, Optional<HealthProbe> probe, PieceCheckPolicy policy) {
         return new PieceMonitor(piece, type, probe, policy, Clock.systemUTC());
+    }
+
+    public static PieceMonitor of(String piece, String type, Optional<HealthProbe> probe, PieceCheckPolicy policy,
+                                  CircuitBreakerPolicy circuitPolicy) {
+        return new PieceMonitor(piece, type, probe, policy, circuitPolicy, Clock.systemUTC());
     }
 
     public <T, E extends Exception> T call(PieceCall<T, E> call) throws E {
@@ -48,14 +71,40 @@ public final class PieceMonitor {
      * failure of it, so it leaves the piece healthy.
      */
     public <T, E extends Exception> T call(PieceCall<T, E> call, List<Class<? extends Exception>> answers) throws E {
+        circuit.acquirePermit();
         try {
             T result = call.call();
+            circuit.onSuccess();
             lastCallFailure = Optional.empty();
             return result;
         } catch (FailureOutsideThePiece outside) {
             throw outside.failure();
+        } catch (PieceAsksToWaitException wait) {
+            circuit.holdOpenUntil(wait.until());
+            lastCallFailure = Optional.of(reasonOf(wait));
+            throw wait;
         } catch (Exception e) {
-            lastCallFailure = isAnswer(e, answers) ? Optional.empty() : Optional.of(reasonOf(e));
+            if (isAnswer(e, answers)) {
+                circuit.onSuccess();
+                lastCallFailure = Optional.empty();
+            } else {
+                circuit.onFailure();
+                lastCallFailure = Optional.of(reasonOf(e));
+            }
+            throw e;
+        }
+    }
+
+    private <T> T element(PieceCall<T, RuntimeException> read) {
+        try {
+            T result = read.call();
+            lastCallFailure = Optional.empty();
+            return result;
+        } catch (FailureOutsideThePiece outside) {
+            throw outside.failure();
+        } catch (RuntimeException e) {
+            circuit.onFailure();
+            lastCallFailure = Optional.of(reasonOf(e));
             throw e;
         }
     }
@@ -70,7 +119,7 @@ public final class PieceMonitor {
         Spliterator<T> watched = new Spliterators.AbstractSpliterator<>(source.estimateSize(), source.characteristics()) {
             @Override
             public boolean tryAdvance(Consumer<? super T> action) {
-                return call(() -> source.tryAdvance(element -> {
+                return element(() -> source.tryAdvance(element -> {
                     try {
                         action.accept(element);
                     } catch (RuntimeException e) {
@@ -122,6 +171,11 @@ public final class PieceMonitor {
 
     public PieceHealth health() {
         Instant now = clock.instant();
+        Optional<Instant> openUntil = circuit.openUntil();
+        if (openUntil.isPresent()) {
+            String reason = "circuit open until " + openUntil.get() + lastCallFailure.map(failure -> " (" + failure + ")").orElse("");
+            return new PieceHealth(piece, type, HealthStatus.UNHEALTHY, Optional.of(reason), now, hasCheck());
+        }
         Optional<CheckResult> check = probe.map(this::checkDueAt);
         if (check.filter(result -> result.status() == HealthStatus.UNHEALTHY).isPresent()) {
             return healthOf(check.get(), now);

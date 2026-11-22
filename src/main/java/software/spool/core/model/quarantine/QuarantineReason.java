@@ -5,5 +5,6 @@ package software.spool.core.model.quarantine;
  */
 public enum QuarantineReason {
     VALIDATION_FAILED,
-    RETRIES_EXHAUSTED
+    RETRIES_EXHAUSTED,
+    MISSING_PARTITION_ATTRIBUTE
 }

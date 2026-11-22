@@ -23,7 +23,8 @@ final class QuarantineModule extends SimpleModule {
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
     @JsonSubTypes({
             @JsonSubTypes.Type(value = QuarantineLocation.Inbox.class, name = "INBOX"),
-            @JsonSubTypes.Type(value = QuarantineLocation.Bronze.class, name = "BRONZE")
+            @JsonSubTypes.Type(value = QuarantineLocation.Bronze.class, name = "BRONZE"),
+            @JsonSubTypes.Type(value = QuarantineLocation.DataMart.class, name = "DATA_MART")
     })
     private interface LocationMixin {
     }

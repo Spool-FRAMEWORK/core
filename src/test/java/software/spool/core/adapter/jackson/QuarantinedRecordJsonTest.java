@@ -53,6 +53,18 @@ class QuarantinedRecordJsonTest {
     }
 
     @Test
+    void roundTrip_mountResultThatCouldNotBeWritten_keepsItsDataMartPartitionAndReason() {
+        PartitionKey partition = PartitionKey.ofEntriesWithoutDate().with("day", "2026-11-21").build();
+        QuarantinedRecord original = QuarantinedRecord.pending(envelope(), QuarantineLocation.dataMart("gold/payments", partition),
+                QuarantineReason.MISSING_PARTITION_ATTRIBUTE, List.of("Partition attribute country is missing"), FIRST_TIME);
+
+        QuarantinedRecord read = roundTrip(original);
+
+        assertThat(read.location()).isEqualTo(QuarantineLocation.dataMart("gold/payments", partition));
+        assertThat(read.history()).isEqualTo(original.history());
+    }
+
+    @Test
     void roundTrip_bypassedRecord_keepsItsReason() {
         QuarantinedRecord original = QuarantinedRecord.pending(envelope(), QuarantineLocation.inbox(),
                         QuarantineReason.VALIDATION_FAILED, List.of(), FIRST_TIME)

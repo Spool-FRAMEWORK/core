@@ -17,6 +17,10 @@ public sealed interface QuarantineLocation {
         return new Bronze(partition);
     }
 
+    static QuarantineLocation dataMart(String dataMart, PartitionKey partition) {
+        return new DataMart(dataMart, partition);
+    }
+
     /**
      * The envelope never reached the data lake: the ingester rejected it or it ran out of retries.
      */
@@ -28,6 +32,17 @@ public sealed interface QuarantineLocation {
      */
     record Bronze(PartitionKey partition) implements QuarantineLocation {
         public Bronze {
+            Objects.requireNonNull(partition, "partition is required");
+        }
+    }
+
+    /**
+     * The envelope holds a mount result that could not be written to the data mart {@code dataMart}, named with its
+     * layer ({@code gold/payments}). {@code partition} is the one the result came with.
+     */
+    record DataMart(String dataMart, PartitionKey partition) implements QuarantineLocation {
+        public DataMart {
+            Objects.requireNonNull(dataMart, "dataMart is required");
             Objects.requireNonNull(partition, "partition is required");
         }
     }

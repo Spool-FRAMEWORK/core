@@ -6,6 +6,7 @@ import software.spool.core.model.watchdog.HeartbeatPayload;
 import software.spool.core.model.watchdog.ModuleIdentity;
 import software.spool.core.model.watchdog.ModuleState;
 import software.spool.core.model.watchdog.ModuleStatus;
+import software.spool.core.port.health.ModuleHealthPayload;
 import software.spool.core.port.watchdog.WatchdogClient;
 
 import java.net.URI;
@@ -28,9 +29,9 @@ public class HttpWatchdogClient implements WatchdogClient {
     }
 
     @Override
-    public void beat(ModuleIdentity identity, ModuleStatus status) {
+    public void beat(ModuleIdentity identity, ModuleHealthPayload health) {
         byte[] body = RecordSerializerFactory.record()
-                .serialize(new HeartbeatPayload(identity, status));
+                .serialize(new HeartbeatPayload(identity, ModuleStatus.of(health.status()), health.pieces()));
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/heartbeat"))
                 .header("Content-Type", "application/json")

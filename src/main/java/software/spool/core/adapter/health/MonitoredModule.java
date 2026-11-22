@@ -2,6 +2,7 @@ package software.spool.core.adapter.health;
 
 import software.spool.core.model.spool.SpoolModule;
 import software.spool.core.model.spool.SpoolNode;
+import software.spool.core.port.health.HealthProvider;
 import software.spool.core.port.health.ModuleHealthPayload;
 import software.spool.core.port.health.PieceMonitor;
 import software.spool.core.port.http.HttpRoute;
@@ -19,6 +20,12 @@ public final class MonitoredModule implements SpoolModule {
     public MonitoredModule(SpoolModule delegate, List<PieceMonitor> pieces) {
         this.delegate = delegate;
         this.pieces = List.copyOf(pieces);
+        delegate.reportHealthFrom(this);
+    }
+
+    @Override
+    public void reportHealthFrom(HealthProvider health) {
+        delegate.reportHealthFrom(health);
     }
 
     @Override

@@ -14,4 +14,11 @@ public interface SpoolModule extends HealthProvider {
     default Collection<HttpRoute> routes() {
         return List.of();
     }
+
+    /**
+     * Tells the heartbeat of the module where to read its health, when something wraps the module and adds to its
+     * health, such as the pieces it uses. A module without a heartbeat ignores it.
+     */
+    default void reportHealthFrom(HealthProvider health) {
+    }
 }

@@ -13,7 +13,7 @@ import software.spool.core.resilience.model.CircuitBreakerStatus;
 import software.spool.core.resilience.model.RetryPolicy;
 import software.spool.core.model.watchdog.ModuleIdentity;
 import software.spool.core.model.watchdog.ModuleState;
-import software.spool.core.model.watchdog.ModuleStatus;
+import software.spool.core.port.health.ModuleHealthPayload;
 import software.spool.core.port.logging.Logger;
 import software.spool.core.port.watchdog.WatchdogClient;
 
@@ -47,9 +47,9 @@ public class ResilienceWatchdogClient implements WatchdogClient {
     }
 
     @Override
-    public void beat(ModuleIdentity identity, ModuleStatus status) {
+    public void beat(ModuleIdentity identity, ModuleHealthPayload health) {
         execute(() -> {
-            delegate.beat(identity, status);
+            delegate.beat(identity, health);
             return null;
         });
     }

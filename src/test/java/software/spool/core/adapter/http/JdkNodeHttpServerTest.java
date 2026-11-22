@@ -36,6 +36,8 @@ class JdkNodeHttpServerTest {
                         + request.queryParameter("status").orElse("none") + "\"}")));
         server.register(new HttpRoute(HttpMethod.POST, "/spool/records/{key}/purge", RouteAccess.open(),
                 (request, caller) -> HttpResponse.json(200, "{\"purged\":\"" + request.pathParameter("key").orElse("") + "\"}")));
+        server.register(new HttpRoute(HttpMethod.POST, "/spool/small", RouteAccess.open(),
+                (request, caller) -> HttpResponse.json(200, "{\"bytes\":" + request.body().length + "}")).withMaxBodyBytes(8));
         server.register(new HttpRoute(HttpMethod.GET, "/spool/broken", RouteAccess.open(),
                 (request, caller) -> { throw new IllegalStateException("database password is hunter2"); }));
         server.start();
@@ -91,6 +93,21 @@ class JdkNodeHttpServerTest {
     void request_toAPathWithMorePartsThanAnyRoute_isNotFound() throws Exception {
         assertThat(send(HttpRequest.newBuilder(uri("/spool/records/order-1/purge/now")).POST(HttpRequest.BodyPublishers.noBody()))
                 .statusCode()).isEqualTo(404);
+    }
+
+    @Test
+    void request_withABodyWithinTheLimitOfItsRoute_reachesTheHandler() throws Exception {
+        var response = send(HttpRequest.newBuilder(uri("/spool/small")).POST(HttpRequest.BodyPublishers.ofString("12345678")));
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.body()).isEqualTo("{\"bytes\":8}");
+    }
+
+    @Test
+    void request_withABodyBiggerThanTheLimitOfItsRoute_isRefusedAsTooLarge() throws Exception {
+        var response = send(HttpRequest.newBuilder(uri("/spool/small")).POST(HttpRequest.BodyPublishers.ofString("123456789")));
+
+        assertThat(response.statusCode()).isEqualTo(413);
     }
 
     @Test

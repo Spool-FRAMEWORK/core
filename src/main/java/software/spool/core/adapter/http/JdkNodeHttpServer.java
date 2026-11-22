@@ -39,6 +39,8 @@ public final class JdkNodeHttpServer implements NodeHttpServer {
     private static final HttpResponse NOT_FOUND = HttpResponse.json(404, "{\"error\":\"not found\"}");
     private static final HttpResponse METHOD_NOT_ALLOWED = HttpResponse.json(405, "{\"error\":\"method not allowed\"}");
     private static final HttpResponse SERVER_ERROR = HttpResponse.json(500, "{\"error\":\"internal error\"}");
+    private static final HttpResponse TOO_LARGE = HttpResponse.json(413, "{\"error\":\"the body is too large\"}");
+    private static final String CONTENT_LENGTH = "Content-Length";
 
     private final int port;
     private final Logger logger;
@@ -101,7 +103,9 @@ public final class JdkNodeHttpServer implements NodeHttpServer {
         Optional<HttpRoute> route = methodOf(exchange).map(byMethod::get);
         if (route.isEmpty()) return METHOD_NOT_ALLOWED;
         try {
-            return guard.handle(route.get(), requestOf(exchange, route.get().method(), path)
+            Optional<byte[]> body = bodyOf(exchange, route.get().maxBodyBytes());
+            if (body.isEmpty()) return TOO_LARGE;
+            return guard.handle(route.get(), requestOf(exchange, route.get().method(), path, body.get())
                     .withPathParameters(matched.get().values()));
         } catch (Exception e) {
             logger.error("Route " + route.get().method() + " " + path + " failed", e);
@@ -117,10 +121,32 @@ public final class JdkNodeHttpServer implements NodeHttpServer {
         }
     }
 
-    private static HttpRequest requestOf(HttpExchange exchange, HttpMethod method, String path) throws IOException {
+    private static HttpRequest requestOf(HttpExchange exchange, HttpMethod method, String path, byte[] body) {
+        return new HttpRequest(method, path, exchange.getRequestHeaders(), body, Map.of(),
+                queryParametersOf(exchange.getRequestURI().getRawQuery()));
+    }
+
+    /**
+     * The body of the request, or nothing when it is bigger than the route allows: a declared length over the limit
+     * is refused without reading, and an undeclared one is read only up to one byte past the limit.
+     */
+    private static Optional<byte[]> bodyOf(HttpExchange exchange, Optional<Integer> maxBodyBytes) throws IOException {
         try (InputStream body = exchange.getRequestBody()) {
-            return new HttpRequest(method, path, exchange.getRequestHeaders(), body.readAllBytes(), Map.of(),
-                    queryParametersOf(exchange.getRequestURI().getRawQuery()));
+            if (maxBodyBytes.isEmpty()) return Optional.of(body.readAllBytes());
+            int limit = maxBodyBytes.get();
+            Optional<Long> declared = Optional.ofNullable(exchange.getRequestHeaders().getFirst(CONTENT_LENGTH))
+                    .flatMap(JdkNodeHttpServer::lengthOf);
+            if (declared.isPresent() && declared.get() > limit) return Optional.empty();
+            byte[] read = body.readNBytes(limit + 1);
+            return read.length > limit ? Optional.empty() : Optional.of(read);
+        }
+    }
+
+    private static Optional<Long> lengthOf(String header) {
+        try {
+            return Optional.of(Long.parseLong(header.strip()));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
         }
     }
 

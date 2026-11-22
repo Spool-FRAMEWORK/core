@@ -7,8 +7,10 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -117,6 +119,49 @@ class PieceMonitorTest {
     void hasCheck_saysWhetherThePieceHasACheckOfItsOwn() {
         assertThat(monitor(Optional.empty()).hasCheck()).isFalse();
         assertThat(monitor(Optional.of(() -> HealthCheck.healthy("lake"))).hasCheck()).isTrue();
+    }
+
+    @Test
+    void health_afterACallThatEndedInAnAnswerOfThePiece_isHealthy() {
+        PieceMonitor monitor = monitor(Optional.empty());
+
+        assertThatThrownBy(() -> monitor.call(() -> {
+            throw new IllegalArgumentException("already received");
+        }, List.of(IllegalArgumentException.class))).isInstanceOf(IllegalArgumentException.class);
+
+        assertThat(monitor.health().status()).isEqualTo(HealthStatus.HEALTHY);
+    }
+
+    @Test
+    void stream_whenReadingAnElementFails_marksThePieceUnhealthy() {
+        PieceMonitor monitor = monitor(Optional.empty());
+        Stream<String> stream = monitor.stream(() -> Stream.of("a", "b").map(value -> {
+            if (value.equals("b")) throw new IllegalStateException("the object b could not be read");
+            return value;
+        }));
+
+        assertThatThrownBy(stream::toList).hasMessage("the object b could not be read");
+        assertThat(monitor.health().reason()).contains("the object b could not be read");
+    }
+
+    @Test
+    void stream_readToTheEnd_keepsThePieceHealthy() {
+        PieceMonitor monitor = monitor(Optional.empty());
+
+        assertThat(monitor.stream(() -> Stream.of("a", "b")).toList()).containsExactly("a", "b");
+        assertThat(monitor.health().status()).isEqualTo(HealthStatus.HEALTHY);
+    }
+
+    @Test
+    void run_whenWhatThePieceIsGivenFails_doesNotBlameThePiece() {
+        PieceMonitor monitor = monitor(Optional.empty());
+        Stream<String> input = Stream.of("a").map(value -> {
+            throw new IllegalStateException("the source could not be read");
+        });
+
+        assertThatThrownBy(() -> monitor.run(() -> monitor.given(input).forEach(value -> {
+        }))).isInstanceOf(IllegalStateException.class).hasMessage("the source could not be read");
+        assertThat(monitor.health().status()).isEqualTo(HealthStatus.HEALTHY);
     }
 
     private PieceMonitor monitor(Optional<HealthProbe> probe) {

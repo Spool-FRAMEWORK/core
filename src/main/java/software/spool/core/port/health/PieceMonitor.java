@@ -3,7 +3,13 @@ package software.spool.core.port.health;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Watches one piece of infrastructure a module uses: every real call to it, and the check of its type when the
@@ -34,14 +40,73 @@ public final class PieceMonitor {
     }
 
     public <T, E extends Exception> T call(PieceCall<T, E> call) throws E {
+        return call(call, List.of());
+    }
+
+    /**
+     * Calls the piece. An exception of one of the given types is an answer of the piece, such as a duplicate, not a
+     * failure of it, so it leaves the piece healthy.
+     */
+    public <T, E extends Exception> T call(PieceCall<T, E> call, List<Class<? extends Exception>> answers) throws E {
         try {
             T result = call.call();
             lastCallFailure = Optional.empty();
             return result;
+        } catch (FailureOutsideThePiece outside) {
+            throw outside.failure();
         } catch (Exception e) {
-            lastCallFailure = Optional.of(reasonOf(e));
+            lastCallFailure = isAnswer(e, answers) ? Optional.empty() : Optional.of(reasonOf(e));
             throw e;
         }
+    }
+
+    /**
+     * Opens a stream the piece gives and watches each element read from it. What the reader of the stream does
+     * with an element is not blamed on the piece.
+     */
+    public <T> Stream<T> stream(PieceCall<Stream<T>, RuntimeException> open) {
+        Stream<T> opened = call(open);
+        Spliterator<T> source = opened.spliterator();
+        Spliterator<T> watched = new Spliterators.AbstractSpliterator<>(source.estimateSize(), source.characteristics()) {
+            @Override
+            public boolean tryAdvance(Consumer<? super T> action) {
+                return call(() -> source.tryAdvance(element -> {
+                    try {
+                        action.accept(element);
+                    } catch (RuntimeException e) {
+                        throw new FailureOutsideThePiece(e);
+                    }
+                }));
+            }
+        };
+        return StreamSupport.stream(watched, false).onClose(opened::close);
+    }
+
+    /**
+     * A stream the piece is given, such as the results to write. A failure while producing its elements is not
+     * blamed on the piece; a failure of the piece while handling an element is.
+     */
+    public <T> Stream<T> given(Stream<T> input) {
+        Spliterator<T> source = input.spliterator();
+        Spliterator<T> marked = new Spliterators.AbstractSpliterator<>(source.estimateSize(), source.characteristics()) {
+            @Override
+            public boolean tryAdvance(Consumer<? super T> action) {
+                try {
+                    return source.tryAdvance(element -> {
+                        try {
+                            action.accept(element);
+                        } catch (RuntimeException e) {
+                            throw new FailureOfThePiece(e);
+                        }
+                    });
+                } catch (FailureOfThePiece inside) {
+                    throw inside.failure();
+                } catch (RuntimeException e) {
+                    throw new FailureOutsideThePiece(e);
+                }
+            }
+        };
+        return StreamSupport.stream(marked, false).onClose(input::close);
     }
 
     public <E extends Exception> void run(PieceAction<E> action) throws E {
@@ -99,7 +164,37 @@ public final class PieceMonitor {
         return Optional.ofNullable(e.getMessage()).orElse(e.getClass().getSimpleName());
     }
 
+    private static boolean isAnswer(Exception e, List<Class<? extends Exception>> answers) {
+        return answers.stream().anyMatch(answer -> answer.isInstance(e));
+    }
+
     private record CheckResult(HealthStatus status, Optional<String> reason, Instant at) {
+    }
+
+    private static final class FailureOutsideThePiece extends RuntimeException {
+        private final RuntimeException failure;
+
+        private FailureOutsideThePiece(RuntimeException failure) {
+            super(failure.getMessage(), failure, false, false);
+            this.failure = failure;
+        }
+
+        private RuntimeException failure() {
+            return failure;
+        }
+    }
+
+    private static final class FailureOfThePiece extends RuntimeException {
+        private final RuntimeException failure;
+
+        private FailureOfThePiece(RuntimeException failure) {
+            super(failure.getMessage(), failure, false, false);
+            this.failure = failure;
+        }
+
+        private RuntimeException failure() {
+            return failure;
+        }
     }
 
     @FunctionalInterface

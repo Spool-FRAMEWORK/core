@@ -51,6 +51,15 @@ class QuarantinedRecordTest {
     }
 
     @Test
+    void resolve_replaced_isReplacedAtTheTimeTheNewCaptureArrived() {
+        QuarantinedRecord resolved = pendingRecord().resolve(QuarantineResolution.replaced(SECOND_TIME));
+
+        assertThat(resolved.status()).isEqualTo(QuarantineStatus.REPLACED);
+        assertThat(resolved.resolution().resolvedAt()).contains(SECOND_TIME);
+        assertThat(resolved.history()).hasSize(1);
+    }
+
+    @Test
     void resolve_bypassed_isBypassedWithItsReason() {
         QuarantinedRecord resolved = pendingRecord()
                 .resolve(QuarantineResolution.bypassed(SECOND_TIME, "price rule misconfigured", Resolver.identified("ana", "people")));

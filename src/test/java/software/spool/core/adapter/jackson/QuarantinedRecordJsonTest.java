@@ -76,6 +76,15 @@ class QuarantinedRecordJsonTest {
     }
 
     @Test
+    void roundTrip_replacedRecord_keepsWhenItWasReplaced() {
+        QuarantinedRecord original = QuarantinedRecord.pending(envelope(), QuarantineLocation.inbox(),
+                        QuarantineReason.VALIDATION_FAILED, List.of(), FIRST_TIME)
+                .resolve(QuarantineResolution.replaced(SECOND_TIME));
+
+        assertThat(roundTrip(original).resolution()).isEqualTo(QuarantineResolution.replaced(SECOND_TIME));
+    }
+
+    @Test
     void read_recordResolvedBeforeResolversWereKept_hasAnUnknownResolver() {
         QuarantinedRecord resolved = QuarantinedRecord.pending(envelope(), QuarantineLocation.inbox(),
                         QuarantineReason.VALIDATION_FAILED, List.of(), FIRST_TIME)

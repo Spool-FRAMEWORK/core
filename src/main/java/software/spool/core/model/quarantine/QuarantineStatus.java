@@ -8,5 +8,6 @@ public enum QuarantineStatus {
     REPUBLISHED,
     CORRECTED,
     BYPASSED,
-    PURGED
+    PURGED,
+    REPLACED
 }

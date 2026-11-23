@@ -36,6 +36,11 @@ public sealed interface QuarantineResolution {
         return new Purged(resolvedAt, resolver);
     }
 
+    /** A new capture of the same record took its place, because its source replaces what is in quarantine. */
+    static QuarantineResolution replaced(Instant resolvedAt) {
+        return new Replaced(resolvedAt);
+    }
+
     record Pending() implements QuarantineResolution {
         @Override
         public QuarantineStatus status() {
@@ -125,6 +130,22 @@ public sealed interface QuarantineResolution {
         @Override
         public QuarantineStatus status() {
             return QuarantineStatus.PURGED;
+        }
+
+        @Override
+        public Optional<Instant> resolvedAt() {
+            return Optional.of(at);
+        }
+    }
+
+    record Replaced(Instant at) implements QuarantineResolution {
+        public Replaced {
+            Objects.requireNonNull(at, "at is required");
+        }
+
+        @Override
+        public QuarantineStatus status() {
+            return QuarantineStatus.REPLACED;
         }
 
         @Override

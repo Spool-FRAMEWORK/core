@@ -9,7 +9,10 @@ public interface NodeHttpServer {
      */
     void register(HttpRoute route);
 
-    /** Takes the route out, so its method and path find nothing. A route the server does not have changes nothing. */
+    /**
+     * Takes out the route of the method and path of {@code route}, so they find nothing. A route the server does not
+     * have changes nothing. Registering and taking out are safe to call while the server answers requests.
+     */
     void unregister(HttpRoute route);
 
     void start() throws IOException;

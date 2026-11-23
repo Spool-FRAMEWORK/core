@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.ArrayList;
 import java.nio.charset.StandardCharsets;
 import java.net.URLDecoder;
@@ -45,8 +46,7 @@ public final class JdkNodeHttpServer implements NodeHttpServer {
     private final int port;
     private final Logger logger;
     private final RouteAccessGuard guard;
-    private final Map<String, Map<HttpMethod, HttpRoute>> routesByPath = new ConcurrentHashMap<>();
-    private final Map<String, RoutePattern> patternsByPath = new ConcurrentHashMap<>();
+    private final Map<String, PathRoutes> routesByPath = new ConcurrentHashMap<>();
     private HttpServer server;
 
     public JdkNodeHttpServer(int port) {
@@ -61,20 +61,17 @@ public final class JdkNodeHttpServer implements NodeHttpServer {
 
     @Override
     public void register(HttpRoute route) {
-        patternsByPath.computeIfAbsent(route.path(), RoutePattern::new);
-        Map<HttpMethod, HttpRoute> byMethod = routesByPath.computeIfAbsent(route.path(), path -> new ConcurrentHashMap<>());
-        if (byMethod.putIfAbsent(route.method(), route) != null) {
-            throw new IllegalArgumentException("The node already has a route for " + route.method() + " " + route.path());
-        }
+        routesByPath.compute(route.path(), (path, current) -> {
+            PathRoutes routes = current == null ? PathRoutes.empty(path) : current;
+            if (routes.byMethod().containsKey(route.method()))
+                throw new IllegalArgumentException("The node already has a route for " + route.method() + " " + path);
+            return routes.with(route);
+        });
     }
 
     @Override
     public void unregister(HttpRoute route) {
-        routesByPath.computeIfPresent(route.path(), (path, byMethod) -> {
-            byMethod.remove(route.method(), route);
-            return byMethod.isEmpty() ? null : byMethod;
-        });
-        if (!routesByPath.containsKey(route.path())) patternsByPath.remove(route.path());
+        routesByPath.computeIfPresent(route.path(), (path, routes) -> routes.without(route.method()).orElse(null));
     }
 
     @Override
@@ -104,11 +101,11 @@ public final class JdkNodeHttpServer implements NodeHttpServer {
         List<String> requestParts = RoutePattern.partsOf(exchange.getRequestURI().getRawPath()).stream()
                 .map(part -> URLDecoder.decode(part, StandardCharsets.UTF_8))
                 .toList();
-        Optional<Matched> matched = patternsByPath.values().stream()
-                .flatMap(pattern -> pattern.match(requestParts).map(values -> new Matched(pattern, values)).stream())
-                .max(Comparator.comparingLong(candidate -> candidate.pattern().literalParts()));
+        Optional<Matched> matched = routesByPath.values().stream()
+                .flatMap(routes -> routes.pattern().match(requestParts).map(values -> new Matched(routes, values)).stream())
+                .max(Comparator.comparingLong(candidate -> candidate.routes().pattern().literalParts()));
         if (matched.isEmpty()) return NOT_FOUND;
-        Map<HttpMethod, HttpRoute> byMethod = routesByPath.get(matched.get().pattern().path());
+        Map<HttpMethod, HttpRoute> byMethod = matched.get().routes().byMethod();
         Optional<HttpRoute> route = methodOf(exchange).map(byMethod::get);
         if (route.isEmpty()) return METHOD_NOT_ALLOWED;
         try {
@@ -172,7 +169,28 @@ public final class JdkNodeHttpServer implements NodeHttpServer {
         return parameters;
     }
 
-    private record Matched(RoutePattern pattern, Map<String, String> values) {
+    private record Matched(PathRoutes routes, Map<String, String> values) {
+    }
+
+    /** The routes of one path, by method, and the pattern of the path; replaced whole, never changed in place. */
+    private record PathRoutes(RoutePattern pattern, Map<HttpMethod, HttpRoute> byMethod) {
+        static PathRoutes empty(String path) {
+            return new PathRoutes(new RoutePattern(path), Map.of());
+        }
+
+        PathRoutes with(HttpRoute route) {
+            Map<HttpMethod, HttpRoute> more = new EnumMap<>(HttpMethod.class);
+            more.putAll(byMethod);
+            more.put(route.method(), route);
+            return new PathRoutes(pattern, Map.copyOf(more));
+        }
+
+        Optional<PathRoutes> without(HttpMethod method) {
+            Map<HttpMethod, HttpRoute> fewer = new EnumMap<>(HttpMethod.class);
+            fewer.putAll(byMethod);
+            fewer.remove(method);
+            return fewer.isEmpty() ? Optional.empty() : Optional.of(new PathRoutes(pattern, Map.copyOf(fewer)));
+        }
     }
 
     private static void respond(HttpExchange exchange, HttpResponse response) throws IOException {

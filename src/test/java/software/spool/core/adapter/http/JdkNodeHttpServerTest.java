@@ -58,6 +58,21 @@ class JdkNodeHttpServerTest {
     }
 
     @Test
+    void unregister_takesTheRouteOut_leavesTheOthersAndLetsItBeRegisteredAgain() throws Exception {
+        HttpRoute purge = new HttpRoute(HttpMethod.POST, "/spool/records/{key}/purge", RouteAccess.open(),
+                (request, caller) -> HttpResponse.json(200, "{\"again\":true}"));
+        server.unregister(purge);
+
+        assertThat(send(HttpRequest.newBuilder(uri("/spool/records/k1/purge")).POST(HttpRequest.BodyPublishers.noBody())).statusCode())
+                .isEqualTo(404);
+        assertThat(send(HttpRequest.newBuilder(uri("/spool/records/k1"))).statusCode()).isEqualTo(200);
+
+        server.register(purge);
+        assertThat(send(HttpRequest.newBuilder(uri("/spool/records/k1/purge")).POST(HttpRequest.BodyPublishers.noBody())).body())
+                .contains("again");
+    }
+
+    @Test
     void request_toAnUnknownPath_isNotFound() throws Exception {
         assertThat(send(HttpRequest.newBuilder(uri("/spool/missing")).GET()).statusCode()).isEqualTo(404);
     }

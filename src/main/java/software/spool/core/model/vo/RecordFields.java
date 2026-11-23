@@ -8,7 +8,7 @@ import java.util.Optional;
 
 /**
  * The fields of a record read as a JSON object, found by a path written with dots ({@code meta.id}), as a
- * {@link PartitionKeySchema} names them.
+ * {@link PartitionKeySchema} or an {@link IdempotencyKeySchema} names them.
  */
 public final class RecordFields {
     private static final String PATH_SEPARATOR = "\\.";

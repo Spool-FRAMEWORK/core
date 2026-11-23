@@ -96,6 +96,17 @@ SpoolNode node = SpoolNode.create(new OpenTelemetryMetricsRegistry()); // with m
 SpoolNode node = SpoolNode.create(9090, metricsRegistry);             // both
 ```
 
+A running node can also take and drop the modules of a deployment as a group, without restarting, which is how a
+node of a cluster runs what the Spool API assigns to it (ADR-031):
+
+```java
+node.add("orders", List.of(ingester, crawler)); // starts them, with their routes
+node.remove("orders");                          // takes their routes out and stops them
+```
+
+A deployment the node already has, or one with a route the node already answers, is refused and leaves nothing
+behind; so does one whose module fails to start.
+
 Two nodes can be merged into one:
 
 ```java

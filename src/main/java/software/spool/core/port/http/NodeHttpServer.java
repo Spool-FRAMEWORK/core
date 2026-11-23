@@ -9,6 +9,9 @@ public interface NodeHttpServer {
      */
     void register(HttpRoute route);
 
+    /** Takes the route out, so its method and path find nothing. A route the server does not have changes nothing. */
+    void unregister(HttpRoute route);
+
     void start() throws IOException;
 
     void stop();

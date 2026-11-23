@@ -69,6 +69,15 @@ public final class JdkNodeHttpServer implements NodeHttpServer {
     }
 
     @Override
+    public void unregister(HttpRoute route) {
+        routesByPath.computeIfPresent(route.path(), (path, byMethod) -> {
+            byMethod.remove(route.method(), route);
+            return byMethod.isEmpty() ? null : byMethod;
+        });
+        if (!routesByPath.containsKey(route.path())) patternsByPath.remove(route.path());
+    }
+
+    @Override
     public void start() throws IOException {
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/", new TracedHttpHandler(this::handle));

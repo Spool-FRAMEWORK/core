@@ -5,21 +5,24 @@ import software.spool.core.adapter.http.JdkNodeHttpServer;
 import software.spool.core.port.health.HealthStatus;
 import software.spool.core.port.health.ModuleHealthPayload;
 import software.spool.core.port.health.NodeHealthPayload;
+import software.spool.core.port.http.HttpRoute;
 import software.spool.core.port.http.NodeHttpServer;
 import software.spool.core.port.metrics.MetricsRegistry;
 import software.spool.core.port.metrics.SpoolMetrics;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SpoolNode {
-    private final List<SpoolModule> modules = new ArrayList<>();
-    private final Map<SpoolModule, String> moduleIds = new HashMap<>();
+    private final List<SpoolModule> modules = new CopyOnWriteArrayList<>();
+    private final Map<SpoolModule, String> moduleIds = new ConcurrentHashMap<>();
+    private final Map<String, Deployed> deployments = new ConcurrentHashMap<>();
     private final Map<String, HealthStatus> lastKnownStatus = new ConcurrentHashMap<>();
     private final NodeHttpServer httpServer;
     private final String nodeId;
@@ -69,22 +72,72 @@ public class SpoolNode {
     public void start() throws IOException {
         modules.forEach(module -> module.routes().forEach(httpServer::register));
         httpServer.start();
-        modules.forEach(m -> {
-            m.start(PERMIT);
-            String moduleId = moduleIds.get(m);
-            moduleStarted.increment(Map.of(SpoolMetrics.Attributes.MODULE, moduleId));
-            moduleActive.increment(Map.of(SpoolMetrics.Attributes.MODULE, moduleId));
-        });
+        modules.forEach(this::startModule);
     }
 
     public void stop() {
-        modules.forEach(m -> {
-            m.stop(PERMIT);
-            String moduleId = moduleIds.get(m);
-            moduleStopped.increment(Map.of(SpoolMetrics.Attributes.MODULE, moduleId));
-            moduleActive.decrement(Map.of(SpoolMetrics.Attributes.MODULE, moduleId));
-        });
+        modules.forEach(this::stopModule);
         httpServer.stop();
+    }
+
+    /**
+     * Starts the modules of a deployment in the running node, with their routes, as a group that {@link #remove}
+     * takes out whole. When a route is taken, nothing of the deployment is left in the node.
+     *
+     * @throws IllegalStateException if the node already has the deployment
+     * @throws IllegalArgumentException if the node already has a route of the deployment
+     */
+    public synchronized void add(String deployment, List<SpoolModule> deployed) {
+        if (deployments.containsKey(deployment))
+            throw new IllegalStateException("The node already has the deployment " + deployment);
+        deployments.put(deployment, new Deployed(List.copyOf(deployed), registerRoutesOf(deployed)));
+        deployed.forEach(module -> {
+            register(module);
+            startModule(module);
+        });
+    }
+
+    /** Stops the modules of a deployment and takes them and their routes out. A deployment it does not have changes nothing. */
+    public synchronized void remove(String deployment) {
+        Optional.ofNullable(deployments.remove(deployment)).ifPresent(removed -> {
+            removed.modules().forEach(module -> {
+                stopModule(module);
+                modules.remove(module);
+                moduleIds.remove(module);
+            });
+            removed.routes().forEach(httpServer::unregister);
+        });
+    }
+
+    private List<HttpRoute> registerRoutesOf(List<SpoolModule> deployed) {
+        List<HttpRoute> registered = new ArrayList<>();
+        try {
+            deployed.stream().flatMap(module -> module.routes().stream()).forEach(route -> {
+                httpServer.register(route);
+                registered.add(route);
+            });
+        } catch (IllegalArgumentException taken) {
+            registered.forEach(httpServer::unregister);
+            throw taken;
+        }
+        return List.copyOf(registered);
+    }
+
+    private record Deployed(List<SpoolModule> modules, List<HttpRoute> routes) {
+    }
+
+    private void startModule(SpoolModule module) {
+        module.start(PERMIT);
+        String moduleId = moduleIds.get(module);
+        moduleStarted.increment(Map.of(SpoolMetrics.Attributes.MODULE, moduleId));
+        moduleActive.increment(Map.of(SpoolMetrics.Attributes.MODULE, moduleId));
+    }
+
+    private void stopModule(SpoolModule module) {
+        module.stop(PERMIT);
+        String moduleId = moduleIds.get(module);
+        moduleStopped.increment(Map.of(SpoolMetrics.Attributes.MODULE, moduleId));
+        moduleActive.decrement(Map.of(SpoolMetrics.Attributes.MODULE, moduleId));
     }
 
     public SpoolNode and(SpoolNode other) {

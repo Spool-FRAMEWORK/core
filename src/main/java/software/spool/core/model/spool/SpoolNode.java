@@ -84,29 +84,43 @@ public class SpoolNode {
      * Starts the modules of a deployment in the running node, with their routes, as a group that {@link #remove}
      * takes out whole. When a route is taken, nothing of the deployment is left in the node.
      *
-     * @throws IllegalStateException if the node already has the deployment
+     * @throws IllegalStateException if the node already has the deployment, or a module of it fails to start
      * @throws IllegalArgumentException if the node already has a route of the deployment
      */
     public synchronized void add(String deployment, List<SpoolModule> deployed) {
         if (deployments.containsKey(deployment))
             throw new IllegalStateException("The node already has the deployment " + deployment);
-        deployments.put(deployment, new Deployed(List.copyOf(deployed), registerRoutesOf(deployed)));
-        deployed.forEach(module -> {
-            register(module);
-            startModule(module);
-        });
+        List<HttpRoute> routes = registerRoutesOf(deployed);
+        List<SpoolModule> started = new ArrayList<>();
+        try {
+            for (SpoolModule module : deployed) {
+                register(module);
+                startModule(module);
+                started.add(module);
+            }
+        } catch (RuntimeException failed) {
+            routes.forEach(httpServer::unregister);
+            started.forEach(this::stopModule);
+            deployed.forEach(this::forget);
+            throw new IllegalStateException("The deployment " + deployment + " could not start: " + failed.getMessage(), failed);
+        }
+        deployments.put(deployment, new Deployed(List.copyOf(deployed), routes));
     }
 
     /** Stops the modules of a deployment and takes them and their routes out. A deployment it does not have changes nothing. */
     public synchronized void remove(String deployment) {
         Optional.ofNullable(deployments.remove(deployment)).ifPresent(removed -> {
+            removed.routes().forEach(httpServer::unregister);
             removed.modules().forEach(module -> {
                 stopModule(module);
-                modules.remove(module);
-                moduleIds.remove(module);
+                forget(module);
             });
-            removed.routes().forEach(httpServer::unregister);
         });
+    }
+
+    private void forget(SpoolModule module) {
+        modules.remove(module);
+        Optional.ofNullable(moduleIds.remove(module)).ifPresent(lastKnownStatus::remove);
     }
 
     private List<HttpRoute> registerRoutesOf(List<SpoolModule> deployed) {

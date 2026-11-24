@@ -1,14 +1,20 @@
 package software.spool.core.port.idempotency;
 
 import software.spool.core.model.vo.IdempotencyKey;
+import software.spool.core.model.vo.ProcessedKey;
+
+import java.time.Instant;
 
 /**
- * The idempotency keys a consumer already processed, remembered during a window (ADR-007). A consumer saves a key
- * only after it processed its event successfully, and does not repeat the work for a key it contains.
+ * The idempotency keys already processed, each with the moment it was (ADR-007, ADR-033). The repository keeps and
+ * finds them; whoever uses it decides from that moment when to forget them, with {@link #forgetProcessedBefore}.
  */
 public interface ProcessedKeyRepository {
     boolean contains(IdempotencyKey key);
 
-    /** Remembers the key for a whole window from now, also when it was already remembered. */
-    void save(IdempotencyKey key);
+    /** Keeps the key with the moment it was processed, replacing the moment it had if it was already kept. */
+    void save(ProcessedKey processedKey);
+
+    /** Forgets the keys processed before the given moment; one processed at that very moment is kept. */
+    void forgetProcessedBefore(Instant moment);
 }

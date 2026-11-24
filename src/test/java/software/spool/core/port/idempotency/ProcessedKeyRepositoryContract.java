@@ -2,91 +2,69 @@ package software.spool.core.port.idempotency;
 
 import org.junit.jupiter.api.Test;
 import software.spool.core.model.vo.IdempotencyKey;
+import software.spool.core.model.vo.ProcessedKey;
 
-import java.time.Clock;
-import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Rules every {@link ProcessedKeyRepository} adapter must follow (ADR-007).
+ * Rules every {@link ProcessedKeyRepository} adapter must follow (ADR-007, ADR-033): it keeps each key with the moment
+ * it was processed, and forgets only what it is asked to.
  */
 public abstract class ProcessedKeyRepositoryContract {
-    private static final Duration WINDOW = Duration.ofMinutes(10);
     private static final IdempotencyKey KEY = IdempotencyKey.of("order-1");
     private static final IdempotencyKey OTHER_KEY = IdempotencyKey.of("order-2");
+    private static final Instant MONDAY = Instant.parse("2026-11-23T10:00:00Z");
+    private static final Instant TUESDAY = Instant.parse("2026-11-24T10:00:00Z");
+    private static final Instant WEDNESDAY = Instant.parse("2026-11-25T10:00:00Z");
 
-    private final MovableClock clock = new MovableClock();
-
-    protected abstract ProcessedKeyRepository repository(Duration window, Clock clock);
+    protected abstract ProcessedKeyRepository repository();
 
     @Test
     void contains_keyNeverSaved_isFalse() {
-        assertThat(repository(WINDOW, clock).contains(KEY)).isFalse();
+        assertThat(repository().contains(KEY)).isFalse();
     }
 
     @Test
-    void contains_keySavedWithinTheWindow_isTrue() {
-        ProcessedKeyRepository repository = repository(WINDOW, clock);
-        repository.save(KEY);
-        clock.advance(WINDOW.minusSeconds(1));
+    void contains_savedKey_isTrue() {
+        ProcessedKeyRepository repository = repository();
+        repository.save(new ProcessedKey(KEY, MONDAY));
 
         assertThat(repository.contains(KEY)).isTrue();
         assertThat(repository.contains(OTHER_KEY)).isFalse();
     }
 
     @Test
-    void contains_keySavedAWindowAgo_isFalse() {
-        ProcessedKeyRepository repository = repository(WINDOW, clock);
-        repository.save(KEY);
-        clock.advance(WINDOW);
+    void forgetProcessedBefore_forgetsOnlyTheKeysProcessedBeforeThatMoment() {
+        ProcessedKeyRepository repository = repository();
+        repository.save(new ProcessedKey(KEY, MONDAY));
+        repository.save(new ProcessedKey(OTHER_KEY, WEDNESDAY));
 
-        assertThat(repository.contains(KEY)).isFalse();
-    }
-
-    @Test
-    void save_keyAlreadySaved_startsItsWindowAgain() {
-        ProcessedKeyRepository repository = repository(WINDOW, clock);
-        repository.save(KEY);
-        clock.advance(WINDOW.minusMinutes(1));
-        repository.save(KEY);
-        clock.advance(Duration.ofMinutes(2));
-
-        assertThat(repository.contains(KEY)).isTrue();
-    }
-
-    @Test
-    void contains_keySavedAfterAnExpiredOne_isStillRemembered() {
-        ProcessedKeyRepository repository = repository(WINDOW, clock);
-        repository.save(KEY);
-        clock.advance(WINDOW.minusMinutes(1));
-        repository.save(OTHER_KEY);
-        clock.advance(Duration.ofMinutes(2));
+        repository.forgetProcessedBefore(TUESDAY);
 
         assertThat(repository.contains(KEY)).isFalse();
         assertThat(repository.contains(OTHER_KEY)).isTrue();
     }
 
-    private static final class MovableClock extends Clock {
-        private Instant now = Instant.parse("2026-11-22T10:00:00Z");
+    @Test
+    void forgetProcessedBefore_keepsAKeyProcessedAtThatVeryMoment() {
+        ProcessedKeyRepository repository = repository();
+        repository.save(new ProcessedKey(KEY, TUESDAY));
 
-        void advance(Duration duration) {
-            now = now.plus(duration);
-        }
+        repository.forgetProcessedBefore(TUESDAY);
 
-        @Override public ZoneId getZone() {
-            return ZoneOffset.UTC;
-        }
+        assertThat(repository.contains(KEY)).isTrue();
+    }
 
-        @Override public Clock withZone(ZoneId zone) {
-            return this;
-        }
+    @Test
+    void save_keyAlreadySaved_keepsTheNewMomentItWasProcessed() {
+        ProcessedKeyRepository repository = repository();
+        repository.save(new ProcessedKey(KEY, MONDAY));
+        repository.save(new ProcessedKey(KEY, WEDNESDAY));
 
-        @Override public Instant instant() {
-            return now;
-        }
+        repository.forgetProcessedBefore(TUESDAY);
+
+        assertThat(repository.contains(KEY)).isTrue();
     }
 }
